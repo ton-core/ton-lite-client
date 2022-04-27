@@ -4,9 +4,11 @@ import {
     adnl_message_query,
     liteServer_accountId,
     liteServer_accountState,
+    liteServer_blockData,
     liteServer_blockHeader,
     liteServer_currentTime, liteServer_error,
     liteServer_getAccountState,
+    liteServer_getBlock,
     liteServer_getMasterchainInfo,
     liteServer_getTime,
     liteServer_lookupBlock,
@@ -165,9 +167,14 @@ async function main() {
         return decodeType(answer.answer, liteServer_masterchainInfo)
     }
 
-    async function getBlock(seqno: number) {
+    async function lookupBlock(seqno: number) {
         let answer = await makeQuery(new liteServer_lookupBlock(1, new tonNode_blockId(-1, -9223372036854775808n, seqno), 0n, 0));
         return decodeType(answer.answer, liteServer_blockHeader)
+    }
+
+    async function getBlock(seqno: number, fileHash: Buffer, rootHash: Buffer) {
+        let answer = await makeQuery(new liteServer_getBlock(new tonNode_blockIdExt(-1, -9223372036854775808n, seqno, rootHash, fileHash)));
+        return decodeType(answer.answer, liteServer_blockData);
     }
 
     client.on('connect', () => console.log('on connect'))
@@ -249,7 +256,10 @@ async function main() {
             // await getBlock(i);
             s.push(i);
         }
-        await Promise.all(s.map((i) => getBlock(i)));
+        await Promise.all(s.map(async (i) => {
+            let lk = await lookupBlock(i);
+            await getBlock(i, lk.id.file_hash, lk.id.root_hash);
+        }));
         console.log('Total: ' + (Date.now() - start) + ' ms');
 
         // while(true) {

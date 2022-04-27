@@ -42,3 +42,4 @@ liteServer.query data:bytes = Object;
 liteServer.getMasterchainInfo = liteServer.MasterchainInfo;
 liteServer.getAccountState id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState;
 liteServer.lookupBlock mode:# id:tonNode.blockId lt:mode.1?long utime:mode.2?int = liteServer.BlockHeader;
+liteServer.getBlock id:tonNode.blockIdExt = liteServer.BlockData;

@@ -447,3 +447,23 @@ export class liteServer_lookupBlock extends TlType {
 }
 
 
+export class liteServer_getBlock extends TlType {
+    static typeId = 1668796173
+
+    constructor(public id: tonNode_blockIdExt) {
+        super()
+    }
+
+    getId = () => 1668796173
+
+    encode = (encoder: TlWriteBuffer) => {
+        encoder.writeType(this.id)
+    }
+
+    static decode = (decoder: TlReadBuffer) => {
+        let id = decoder.readType(tonNode_blockIdExt)
+        return new liteServer_getBlock(id)
+    }
+}
+
+
