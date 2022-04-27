@@ -319,6 +319,30 @@ export class liteServer_blockData extends TlType {
 }
 
 
+export class liteServer_blockHeader extends TlType {
+    static typeId = 1965916697
+
+    constructor(public id: tonNode_blockIdExt, public mode: number, public header_proof: Buffer) {
+        super()
+    }
+
+    getId = () => 1965916697
+
+    encode = (encoder: TlWriteBuffer) => {
+        encoder.writeType(this.id)
+        encoder.writeInt32(this.mode)
+        encoder.writeBuff(this.header_proof)
+    }
+
+    static decode = (decoder: TlReadBuffer) => {
+        let id = decoder.readType(tonNode_blockIdExt)
+        let mode = decoder.readInt32()
+        let header_proof = decoder.readBuff()
+        return new liteServer_blockHeader(id, mode, header_proof)
+    }
+}
+
+
 export class liteServer_getTime extends TlType {
     static typeId = 380459572
 
@@ -393,6 +417,32 @@ export class liteServer_getAccountState extends TlType {
         let id = decoder.readType(tonNode_blockIdExt)
         let account = decoder.readType(liteServer_accountId)
         return new liteServer_getAccountState(id, account)
+    }
+}
+
+
+export class liteServer_lookupBlock extends TlType {
+    static typeId = -87492834
+
+    constructor(public mode: number, public id: tonNode_blockId, public lt: bigint, public utime: number) {
+        super()
+    }
+
+    getId = () => -87492834
+
+    encode = (encoder: TlWriteBuffer) => {
+        encoder.writeInt32(this.mode)
+        encoder.writeType(this.id)
+        // encoder.writeInt64(this.lt)
+        // encoder.writeInt32(this.utime)
+    }
+
+    static decode = (decoder: TlReadBuffer) => {
+        let mode = decoder.readInt32()
+        let id = decoder.readType(tonNode_blockId)
+        let lt = decoder.readInt64()
+        let utime = decoder.readInt32()
+        return new liteServer_lookupBlock(mode, id, lt, utime)
     }
 }
 

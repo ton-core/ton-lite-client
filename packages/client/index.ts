@@ -1,22 +1,24 @@
-import {TlReadBuffer, TlWriteBuffer} from "../tl/TlBuffer";
+import { TlReadBuffer, TlWriteBuffer } from "../tl/TlBuffer";
 import {
     adnl_message_answer,
     adnl_message_query,
     liteServer_accountId,
     liteServer_accountState,
+    liteServer_blockHeader,
     liteServer_currentTime, liteServer_error,
     liteServer_getAccountState,
     liteServer_getMasterchainInfo,
     liteServer_getTime,
+    liteServer_lookupBlock,
     liteServer_masterchainInfo,
     liteServer_query,
     tonNode_blockId,
     tonNode_blockIdExt
 } from "../tl-gen/out";
-import {TlType} from "../tl/TlType";
-import {Address, Cell, fromNano, parseCurrencyCollection, Slice} from "ton";
-import {pseudoRandomBytes} from "crypto";
-import {ADNLClient} from "../adnl";
+import { TlType } from "../tl/TlType";
+import { Address, Cell, fromNano, parseCurrencyCollection, Slice } from "ton";
+import { pseudoRandomBytes } from "crypto";
+import { ADNLClient } from "../adnl";
 
 
 // storage_used$_ cells:(VarUInteger 7) bits:(VarUInteger 7)
@@ -100,11 +102,11 @@ function intToIP(int: number) {
 }
 
 let server = {
-    "ip": -1136338705,
-    "port": 19925,
+    "ip": -1903916592,
+    "port": 61005,
     "id": {
         "@type": "pub.ed25519",
-        "key": "ucho5bEkufbKN1JR1BGHpkObq602whJn3Q3UwhtgSo4="
+        "key": "uyBE8C1Xyhzvdie+14RVhqwCqyi8T+Kw2oWSpwyOlgI="
     }
 }
 
@@ -139,7 +141,7 @@ async function main() {
     let queries = new Map<string, (res: adnl_message_answer) => void>()
 
     function makeQuery(query: TlType): Promise<adnl_message_answer> {
-        let id = pseudoRandomBytes(256/8)
+        let id = pseudoRandomBytes(256 / 8)
 
         const packet = encodeType(
             new adnl_message_query(
@@ -152,15 +154,20 @@ async function main() {
             )
         )
 
-       return new Promise((resolve) => {
-           queries.set(id.toString('hex'), resolve)
-           client.write(packet)
-       })
+        return new Promise((resolve) => {
+            queries.set(id.toString('hex'), resolve)
+            client.write(packet)
+        })
     }
 
     async function getMasterchainInfo() {
         let answer = await makeQuery(new liteServer_getMasterchainInfo())
         return decodeType(answer.answer, liteServer_masterchainInfo)
+    }
+
+    async function getBlock(seqno: number) {
+        let answer = await makeQuery(new liteServer_lookupBlock(1, new tonNode_blockId(-1, -9223372036854775808n, seqno), 0n, 0));
+        return decodeType(answer.answer, liteServer_blockHeader)
     }
 
     client.on('connect', () => console.log('on connect'))
@@ -224,26 +231,45 @@ async function main() {
 
 
 
-        let address = Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales')
-        console.time('getMasterchainInfo')
-        let mc = await getMasterchainInfo()
-        console.timeEnd('getMasterchainInfo')
-        await delay(1000)
+        // let address = Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales')
+        // console.time('getMasterchainInfo')
+        let mc = await getMasterchainInfo();
+        // console.timeEnd('getMasterchainInfo')
+        console.warn(mc);
 
-        console.time('getAccountState')
-        let res = await makeQuery(new liteServer_getAccountState(
-            mc.last,
-            new liteServer_accountId(address.workChain, address.hash)
-        ))
-        console.timeEnd('getAccountState')
+        //     workchain: -1,
+        // shard: -9223372036854775808n,
+        // seqno: 20139793,
+        await delay(1000);
 
-        let account = decodeType(res.answer, liteServer_accountState)
+        console.log('Start');
+        const start = Date.now();
+        let s: number[] = [];
+        for (let i = mc.last.seqno - 1000; i < mc.last.seqno; i++) {
+            // await getBlock(i);
+            s.push(i);
+        }
+        await Promise.all(s.map((i) => getBlock(i)));
+        console.log('Total: ' + (Date.now() - start) + ' ms');
 
-        let cell = Cell.fromBoc(account.state)[0].beginParse()
-        let accountDecoded = readAccount(cell)
-        console.log(accountDecoded)
-        console.log(Cell.fromBoc(accountDecoded.storage.state.data.toBoc()))
-        console.log('\n\n')
+        // while(true) {
+        //     await get
+        // }
+
+        // console.time('getAccountState')
+        // let res = await makeQuery(new liteServer_getAccountState(
+        //     mc.last,
+        //     new liteServer_accountId(address.workChain, address.hash)
+        // ))
+        // console.timeEnd('getAccountState')
+
+        // let account = decodeType(res.answer, liteServer_accountState)
+
+        // let cell = Cell.fromBoc(account.state)[0].beginParse()
+        // let accountDecoded = readAccount(cell)
+        // console.log(accountDecoded)
+        // console.log(Cell.fromBoc(accountDecoded.storage.state.data.toBoc()))
+        // console.log('\n\n')
 
         // while (true) {
         //

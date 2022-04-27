@@ -33,7 +33,7 @@ liteServer.masterchainInfo last:tonNode.blockIdExt state_root_hash:int256 init:t
 liteServer.masterchainInfoExt mode:# version:int capabilities:long last:tonNode.blockIdExt last_utime:int now:int state_root_hash:int256 init:tonNode.zeroStateIdExt = liteServer.MasterchainInfoExt;
 liteServer.version mode:# version:int capabilities:long now:int = liteServer.Version;
 liteServer.blockData id:tonNode.blockIdExt data:bytes = liteServer.BlockData;
-
+liteServer.blockHeader id:tonNode.blockIdExt mode:# header_proof:bytes = liteServer.BlockHeader;
 
 ---functions---
 
@@ -41,3 +41,4 @@ liteServer.getTime = liteServer.CurrentTime;
 liteServer.query data:bytes = Object;
 liteServer.getMasterchainInfo = liteServer.MasterchainInfo;
 liteServer.getAccountState id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState;
+liteServer.lookupBlock mode:# id:tonNode.blockId lt:mode.1?long utime:mode.2?int = liteServer.BlockHeader;
