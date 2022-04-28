@@ -2,8 +2,10 @@ import { LiteServerEngine } from "./engines/engine";
 import { LiteServerSingleEngine } from "./engines/single";
 import { LiteServerRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address } from "ton";
+import { Address, Cell, parseDict, Slice } from "ton";
 import util from 'util';
+import BN from "bn.js";
+import { parseShards } from "./parser/parseShards";
 
 function intToIP(int: number) {
     var part1 = int & 255;
@@ -47,14 +49,18 @@ async function main() {
     let read = 0;
     start = Date.now();
 
-    let state = await client.getAccountState(Address.parse('Ef-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprKDH'), mc.last);
-    console.warn(util.inspect(state, false, null, true));
+    // let state = await client.getAccountState(Address.parse('Ef-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprKDH'), mc.last);
+    // console.warn(util.inspect(state, false, null, true));
 
-    state = await client.getAccountState(Address.parse('Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF'), mc.last);
-    console.warn(util.inspect(state, false, null, true));
+    // state = await client.getAccountState(Address.parse('Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF'), mc.last);
+    // console.warn(util.inspect(state, false, null, true));
 
-    state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
-    console.warn(util.inspect(state, false, null, true));
+    // state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
+    // console.warn(util.inspect(state, false, null, true));
+
+    let block = await client.lookupBlockByID({ seqno: 9000001, shard: '-9223372036854775808', workchain: -1 });
+    let shards = await client.getAllShardsInfo(block.id);
+    console.warn(shards);
 
     while (true) {
 

@@ -1,5 +1,6 @@
 import { Address, Cell, parseAccount } from "ton";
 import { LiteServerEngine } from "./engines/engine";
+import { parseShards } from "./parser/parseShards";
 import { Functions } from "./schema";
 
 export class LiteClient {
@@ -96,6 +97,20 @@ export class LiteClient {
     }
 
     getAllShardsInfo = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-        return (await this.engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
+        let res = (await this.engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
+        let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
+        let shards: { [key: string]: { [key: string]: number } } = {};
+        for (let p of parsed) {
+            shards[p[0]] = {};
+            for (let p2 of p[1]) {
+                shards[p[0]][p2[0]] = p2[1];
+            }
+        }
+        return {
+            id: res.id,
+            shards,
+            raw: res.data,
+            proof: res.proof
+        }
     }
 }
