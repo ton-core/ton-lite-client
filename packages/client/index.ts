@@ -1,7 +1,7 @@
-import { fromNano, parseCurrencyCollection, Slice } from "ton";
+import { Address, fromNano, parseCurrencyCollection, Slice } from "ton";
 import { pseudoRandomBytes } from "crypto";
 import { ADNLClient } from "../adnl";
-import { Codecs, Functions } from "./schema";
+import { Codecs, Functions, tonNode_BlockIdExt } from "./schema";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
 
 
@@ -104,15 +104,16 @@ async function main() {
     )
 
     let queries = new Map<string, { f: TLFunction<any, any>, resolver: (res: any) => void }>()
-
+    let nextId = 1;
     function makeQuery<REQ, RES>(f: TLFunction<REQ, RES>, request: REQ): Promise<RES> {
-        let id = pseudoRandomBytes(256 / 8)
+        let id = Buffer.alloc(32);
+        id.writeInt32BE(nextId);
+        nextId++;
 
         // Request
         let writer = new TLWriteBuffer();
         f.encodeRequest(request, writer);
         let body = writer.build();
-        console.warn(body.toString('hex'));
 
         // Lite server query
         let lsQuery = new TLWriteBuffer();
@@ -134,15 +135,46 @@ async function main() {
         return makeQuery(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.getMasterchainInfo' });
     }
 
-    // async function lookupBlock(seqno: number) {
-    //     let answer = await makeQuery(new liteServer_lookupBlock(1, new tonNode_blockId(-1, -9223372036854775808n, seqno), 0n, 0));
-    //     return decodeType(answer.answer, liteServer_blockHeader)
-    // }
+    async function lookupBlock(seqno: number) {
+        return makeQuery(Functions.liteServer_lookupBlock, {
+            kind: 'liteServer.lookupBlock',
+            mode: 1,
+            id: {
+                kind: 'tonNode.blockId',
+                seqno,
+                shard: '-9223372036854775808',
+                workchain: -1
+            },
+            lt: null,
+            utime: null
+        })
+    }
 
-    // async function getBlock(seqno: number, fileHash: Buffer, rootHash: Buffer) {
-    //     let answer = await makeQuery(new liteServer_getBlock(new tonNode_blockIdExt(-1, -9223372036854775808n, seqno, rootHash, fileHash)));
-    //     return decodeType(answer.answer, liteServer_blockData);
-    // }
+    async function getBlock(seqno: number, fileHash: Buffer, rootHash: Buffer) {
+        return makeQuery(Functions.liteServer_getBlock, {
+            kind: 'liteServer.getBlock',
+            id: {
+                kind: 'tonNode.blockIdExt',
+                seqno,
+                shard: '-9223372036854775808',
+                workchain: -1,
+                fileHash,
+                rootHash
+            }
+        });
+    }
+
+    async function getAccountState(address: Address, block: tonNode_BlockIdExt) {
+        return makeQuery(Functions.liteServer_getAccountState, {
+            kind: 'liteServer.getAccountState',
+            id: block,
+            account: {
+                kind: 'liteServer.accountId',
+                workchain: address.workChain,
+                id: address.hash
+            }
+        });
+    }
 
     client.on('connect', () => console.log('on connect'))
     client.on('close', () => console.log('on close'))
@@ -213,18 +245,21 @@ async function main() {
         // seqno: 20139793,
         await delay(1000);
 
-        // console.log('Start');
-        // const start = Date.now();
-        // let s: number[] = [];
-        // for (let i = mc.last.seqno - 1000; i < mc.last.seqno; i++) {
-        //     // await getBlock(i);
-        //     s.push(i);
-        // }
-        // await Promise.all(s.map(async (i) => {
-        //     let lk = await lookupBlock(i);
-        //     await getBlock(i, lk.id.file_hash, lk.id.root_hash);
-        // }));
-        // console.log('Total: ' + (Date.now() - start) + ' ms');
+        let state = await getAccountState(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), mc.last);
+        console.warn(state);
+
+        console.log('Start');
+        const start = Date.now();
+        let s: number[] = [];
+        for (let i = mc.last.seqno - 100; i < mc.last.seqno; i++) {
+            s.push(i);
+        }
+        await Promise.all(s.map(async (i) => {
+            let lk = await lookupBlock(i);
+            await getBlock(i, lk.id.fileHash, lk.id.rootHash);
+        }));
+        console.log('Total: ' + (Date.now() - start) + ' ms');
+
 
         // while(true) {
         //     await get
