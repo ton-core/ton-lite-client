@@ -1,4 +1,4 @@
-import { Address } from "ton";
+import { Address, Cell, parseAccount } from "ton";
 import { LiteServerEngine } from "./engines/engine";
 import { Functions } from "./schema";
 
@@ -32,9 +32,9 @@ export class LiteClient {
     //
     // Account
     //
-    
+
     getAccountState = async (src: Address, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-        return (await this.engine.query(Functions.liteServer_getAccountState, {
+        let res = (await this.engine.query(Functions.liteServer_getAccountState, {
             kind: 'liteServer.getAccountState',
             id: {
                 kind: 'tonNode.blockIdExt',
@@ -50,6 +50,15 @@ export class LiteClient {
                 id: src.hash
             }
         }, 5000));
+
+        return {
+            state: parseAccount(Cell.fromBoc(res.state)[0].beginParse()),
+            raw: res.state,
+            proof: res.proof,
+            block: res.id,
+            shardBlock: res.shardblk,
+            shardProof: res.shardProof
+        }
     }
 
     //

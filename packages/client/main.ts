@@ -1,81 +1,9 @@
-import { fromNano, parseCurrencyCollection, Slice } from "ton";
-import { Functions } from "./schema";
 import { LiteServerEngine } from "./engines/engine";
 import { LiteServerSingleEngine } from "./engines/single";
 import { LiteServerRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-
-
-// storage_used$_ cells:(VarUInteger 7) bits:(VarUInteger 7)
-// ext_refs:(VarUInteger 7) int_refs:(VarUInteger 7)
-// public_cells:(VarUInteger 7) = StorageUsed;
-
-function readStorageUsed(cs: Slice) {
-    return {
-        cells: cs.readVarUInt(3),
-        bits: cs.readVarUInt(3),
-        // ext_refs: cs.readVarUInt(7),
-        // int_refs: cs.readVarUInt(7),
-        public_cells: cs.readVarUInt(3),
-    }
-}
-
-// storage_info$_ used:StorageUsed last_paid:uint32
-// due_payment:(Maybe Grams) = StorageInfo;
-
-function readStorageInfo(cs: Slice) {
-    return {
-        storageUsed: readStorageUsed(cs),
-        lastPaid: cs.readUint(32).toNumber(),
-        duePayment: cs.readBit() ? cs.readCoins() : null
-    }
-}
-
-
-// _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
-//   code:(Maybe ^Cell) data:(Maybe ^Cell)
-//   library:(HashmapE 256 SimpleLib) = StateInit;
-
-// account_uninit$00 = AccountState;
-// account_active$1 _:StateInit = AccountState;
-// account_frozen$01 state_hash:bits256 = AccountState;
-function readAccountState(cs: Slice) {
-    cs.readBit() // account_active$1
-    cs.readBit() // split_depth
-    cs.readBit() // special
-
-    return {
-        code: cs.readRef().toCell(),
-        data: cs.readRef().toCell(),
-        // library: cs.readBit()
-    }
-}
-
-// account_storage$_ last_trans_lt:uint64
-// balance:CurrencyCollection state:AccountState
-// = AccountStorage;
-
-function readAccountStorage(cs: Slice) {
-    return {
-        transLastLt: cs.readUint(64),
-        balance: fromNano(parseCurrencyCollection(cs).coins),
-        state: readAccountState(cs)
-    }
-}
-
-// account_none$0 = Account;
-// account$1 addr:MsgAddressInt storage_stat:StorageInfo
-// storage:AccountStorage = Account;
-function readAccount(cs: Slice) {
-    cs.readBit()
-    return {
-        address: cs.readAddress(),
-        storageStat: readStorageInfo(cs),
-        storage: readAccountStorage(cs)
-    }
-}
-
-
+import { Address } from "ton";
+import util from 'util';
 
 function intToIP(int: number) {
     var part1 = int & 255;
@@ -118,6 +46,15 @@ async function main() {
     let seqno = 1;
     let read = 0;
     start = Date.now();
+
+    let state = await client.getAccountState(Address.parse('Ef-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprKDH'), mc.last);
+    console.warn(util.inspect(state, false, null, true));
+
+    state = await client.getAccountState(Address.parse('Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF'), mc.last);
+    console.warn(util.inspect(state, false, null, true));
+
+    state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
+    console.warn(util.inspect(state, false, null, true));
 
     while (true) {
 
