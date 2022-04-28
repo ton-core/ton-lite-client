@@ -1,26 +1,8 @@
-import { TlReadBuffer, TlWriteBuffer } from "../tl/TlBuffer";
-import {
-    adnl_message_answer,
-    adnl_message_query,
-    liteServer_accountId,
-    liteServer_accountState,
-    liteServer_blockData,
-    liteServer_blockHeader,
-    liteServer_currentTime, liteServer_error,
-    liteServer_getAccountState,
-    liteServer_getBlock,
-    liteServer_getMasterchainInfo,
-    liteServer_getTime,
-    liteServer_lookupBlock,
-    liteServer_masterchainInfo,
-    liteServer_query,
-    tonNode_blockId,
-    tonNode_blockIdExt
-} from "../tl-gen/out";
-import { TlType } from "../tl/TlType";
-import { Address, Cell, fromNano, parseCurrencyCollection, Slice } from "ton";
+import { fromNano, parseCurrencyCollection, Slice } from "ton";
 import { pseudoRandomBytes } from "crypto";
 import { ADNLClient } from "../adnl";
+import { Codecs, Functions } from "./schema";
+import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
 
 
 // storage_used$_ cells:(VarUInteger 7) bits:(VarUInteger 7)
@@ -112,26 +94,7 @@ let server = {
     }
 }
 
-const TL_GETTIME = '7af98bb435263e6c95d6fecb497dfd0aa5f031e7d412986b5ce720496db512052e8f2d100cdf068c7904345aad16000000000000'
-
-const TL_PARSE_GETTIME = (data: Buffer) => {
-    const unix = data.slice(data.byteLength - 7, data.byteLength - 3).readUint32LE(0)
-
-    return new Date(unix * 1000).toString()
-}
-
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-function decodeType<T extends { typeId: number, new(...args: any[]): InstanceType<T>, decode: (decoder: TlReadBuffer) => InstanceType<T> }>(data: Buffer, type: T) {
-    let reader = new TlReadBuffer(data)
-    return reader.readType(type, true)
-}
-
-function encodeType(type: TlType) {
-    let b = new TlWriteBuffer()
-    b.writeType(type, true)
-    return b.build()
-}
 
 async function main() {
     const client = new ADNLClient(
@@ -140,57 +103,58 @@ async function main() {
         server.id.key
     )
 
-    let queries = new Map<string, (res: adnl_message_answer) => void>()
+    let queries = new Map<string, { f: TLFunction<any, any>, resolver: (res: any) => void }>()
 
-    function makeQuery(query: TlType): Promise<adnl_message_answer> {
+    function makeQuery<REQ, RES>(f: TLFunction<REQ, RES>, request: REQ): Promise<RES> {
         let id = pseudoRandomBytes(256 / 8)
 
-        const packet = encodeType(
-            new adnl_message_query(
-                id,
-                encodeType(
-                    new liteServer_query(
-                        encodeType(query)
-                    )
-                )
-            )
-        )
+        // Request
+        let writer = new TLWriteBuffer();
+        f.encodeRequest(request, writer);
+        let body = writer.build();
+        console.warn(body.toString('hex'));
+
+        // Lite server query
+        let lsQuery = new TLWriteBuffer();
+        Functions.liteServer_query.encodeRequest({ kind: 'liteServer.query', data: body }, lsQuery);
+        let lsbody = lsQuery.build();
+
+        // ADNL body
+        let adnlWriter = new TLWriteBuffer();
+        Codecs.adnl_Message.encode({ kind: 'adnl.message.query', queryId: id, query: lsbody }, adnlWriter);
+        const packet = adnlWriter.build();
 
         return new Promise((resolve) => {
-            queries.set(id.toString('hex'), resolve)
+            queries.set(id.toString('hex'), { resolver: resolve, f });
             client.write(packet)
         })
     }
 
     async function getMasterchainInfo() {
-        let answer = await makeQuery(new liteServer_getMasterchainInfo())
-        return decodeType(answer.answer, liteServer_masterchainInfo)
+        return makeQuery(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.getMasterchainInfo' });
     }
 
-    async function lookupBlock(seqno: number) {
-        let answer = await makeQuery(new liteServer_lookupBlock(1, new tonNode_blockId(-1, -9223372036854775808n, seqno), 0n, 0));
-        return decodeType(answer.answer, liteServer_blockHeader)
-    }
+    // async function lookupBlock(seqno: number) {
+    //     let answer = await makeQuery(new liteServer_lookupBlock(1, new tonNode_blockId(-1, -9223372036854775808n, seqno), 0n, 0));
+    //     return decodeType(answer.answer, liteServer_blockHeader)
+    // }
 
-    async function getBlock(seqno: number, fileHash: Buffer, rootHash: Buffer) {
-        let answer = await makeQuery(new liteServer_getBlock(new tonNode_blockIdExt(-1, -9223372036854775808n, seqno, rootHash, fileHash)));
-        return decodeType(answer.answer, liteServer_blockData);
-    }
+    // async function getBlock(seqno: number, fileHash: Buffer, rootHash: Buffer) {
+    //     let answer = await makeQuery(new liteServer_getBlock(new tonNode_blockIdExt(-1, -9223372036854775808n, seqno, rootHash, fileHash)));
+    //     return decodeType(answer.answer, liteServer_blockData);
+    // }
 
     client.on('connect', () => console.log('on connect'))
     client.on('close', () => console.log('on close'))
     client.on('data', (data) => {
-        // console.log('on data: ', TL_PARSE_GETTIME(data))
-
-
-        let answer = decodeType(data, adnl_message_answer)
-        // console.log(decodeType(answer.answer, liteServer_currentTime))
-
-        // console.log('query id', answer.query_id.toString('hex'))
-        let id = answer.query_id.toString('hex')
-        let cb = queries.get(id)
-        cb!(answer)
-        queries.delete(id)
+        let answer = Codecs.adnl_Message.decode(new TLReadBuffer(data));
+        if (answer.kind === 'adnl.message.answer') {
+            let id = answer.queryId.toString('hex')
+            let cb = queries.get(id)
+            let decoded = cb!.f.decodeResponse(new TLReadBuffer(answer.answer));
+            cb!.resolver(decoded);
+            queries.delete(id);
+        }
 
         // let masterInfo = decodeType(answer.answer, liteServer_masterchainInfo)
         // console.log(masterInfo)
@@ -249,18 +213,18 @@ async function main() {
         // seqno: 20139793,
         await delay(1000);
 
-        console.log('Start');
-        const start = Date.now();
-        let s: number[] = [];
-        for (let i = mc.last.seqno - 1000; i < mc.last.seqno; i++) {
-            // await getBlock(i);
-            s.push(i);
-        }
-        await Promise.all(s.map(async (i) => {
-            let lk = await lookupBlock(i);
-            await getBlock(i, lk.id.file_hash, lk.id.root_hash);
-        }));
-        console.log('Total: ' + (Date.now() - start) + ' ms');
+        // console.log('Start');
+        // const start = Date.now();
+        // let s: number[] = [];
+        // for (let i = mc.last.seqno - 1000; i < mc.last.seqno; i++) {
+        //     // await getBlock(i);
+        //     s.push(i);
+        // }
+        // await Promise.all(s.map(async (i) => {
+        //     let lk = await lookupBlock(i);
+        //     await getBlock(i, lk.id.file_hash, lk.id.root_hash);
+        // }));
+        // console.log('Total: ' + (Date.now() - start) + ' ms');
 
         // while(true) {
         //     await get
