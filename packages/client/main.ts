@@ -3,6 +3,7 @@ import { Functions } from "./schema";
 import { LiteServerEngine } from "./engines/engine";
 import { LiteServerSingleEngine } from "./engines/single";
 import { LiteServerRoundRobinEngine } from "./engines/roundRobin";
+import { LiteClient } from "./client";
 
 
 // storage_used$_ cells:(VarUInteger 7) bits:(VarUInteger 7)
@@ -86,13 +87,14 @@ function intToIP(int: number) {
 }
 
 let server = {
-    "ip": -1903916592,
-    "port": 61005,
+    "ip": -1468558020,
+    "port": 20640,
     "id": {
         "@type": "pub.ed25519",
-        "key": "uyBE8C1Xyhzvdie+14RVhqwCqyi8T+Kw2oWSpwyOlgI="
+        "key": "D/ezwjebrDbjs2rpaY3pYrewsI4qcu65HNNq/fim13U="
     }
 }
+
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -107,9 +109,10 @@ async function main() {
         }));
     }
     const engine: LiteServerEngine = new LiteServerRoundRobinEngine(engines);
+    const client = new LiteClient(engine);
 
     let start = Date.now();
-    let mc = await engine.query(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.getMasterchainInfo' }, 5000);
+    let mc = await client.getMasterchainInfoExt();
     console.log('Read in ' + (Date.now() - start) + ' ms');
     console.warn(mc);
     let seqno = 1;
@@ -125,37 +128,18 @@ async function main() {
 
         // Blocks
         let seqnos: number[] = [];
-        for (let i = 0; i < 10000; i++) {
+        for (let i = 0; i < 1000; i++) {
             seqnos.push(seqno++);
         }
         await Promise.all(seqnos.map(async (s) => {
-            let lk = await engine.query(Functions.liteServer_lookupBlock, {
-                kind: 'liteServer.lookupBlock',
-                mode: 1,
-                id: {
-                    kind: 'tonNode.blockId',
-                    seqno: s,
-                    shard: '-9223372036854775808',
-                    workchain: -1
-                },
-                lt: null,
-                utime: null
-            }, 5000);
-            let bk = await engine.query(Functions.liteServer_getBlockHeader, {
-                kind: 'liteServer.getBlockHeader',
-                mode: 1,
-                id: lk.id
-            }, 5000);
-
-            // let shards = await engine.query(Functions.liteServer_getShardInfo, {
-            //     kind: 'liteServer.getShardInfo',
-            //     id: bk.id,
-            //     shard: bk.id.shard,
-            //     workchain: -1,
-            //     exact: true
-            // }, 5000)
-
-            return bk;
+            let lk = await client.lookupBlockByID({
+                seqno: s,
+                shard: '-9223372036854775808',
+                workchain: -1
+            });
+            // let bh = await client.getBlockHeader(lk.id);
+            let shards = await client.getAllShardsInfo(lk.id);
+            return shards;
         }));
         read += seqnos.length;
         console.log('Read ' + read + ' in ' + (Date.now() - start) + ' ms');
