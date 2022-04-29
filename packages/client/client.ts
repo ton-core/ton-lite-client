@@ -1,12 +1,73 @@
-import { BN } from "bn.js";
-import { Address, Cell, parseAccount } from "ton";
+import BN from "bn.js";
+import { Address, Cell, parseAccount, RawCurrencyCollection } from "ton";
 import { parseShardStateUnsplit } from "ton/dist/block/parse";
 import { LiteServerEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
-import { Functions } from "./schema";
+import { Functions, liteServer_blockHeader, tonNode_blockIdExt } from "./schema";
+import DataLoader from 'dataloader';
+
+const ZERO = new BN(0);
+
+const lookupBlockByID = async (engine: LiteServerEngine, props: { seqno: number, shard: string, workchain: number }) => {
+    return await engine.query(Functions.liteServer_lookupBlock, {
+        kind: 'liteServer.lookupBlock',
+        mode: 1,
+        id: {
+            kind: 'tonNode.blockId',
+            seqno: props.seqno,
+            shard: props.shard,
+            workchain: props.workchain
+        },
+        lt: null,
+        utime: null
+    }, 5000);
+}
+
+type AllShardsResponse = {
+    id: tonNode_blockIdExt;
+    shards: {
+        [key: string]: {
+            [key: string]: number;
+        };
+    };
+    raw: Buffer;
+    proof: Buffer;
+}
+const getAllShardsInfo = async (engine: LiteServerEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
+    let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
+    let shards: { [key: string]: { [key: string]: number } } = {};
+    for (let p of parsed) {
+        shards[p[0]] = {};
+        for (let p2 of p[1]) {
+            shards[p[0]][p2[0]] = p2[1];
+        }
+    }
+    return {
+        id: res.id,
+        shards,
+        raw: res.data,
+        proof: res.proof
+    }
+}
+
+// id: tonNode_blockIdExt;
+// shards: {
+//     [key: string]: {
+//         [key: string]: number;
+//     };
+// };
+// raw: Buffer;
+// proof: Buffer;
 
 export class LiteClient {
     readonly engine: LiteServerEngine;
+    #blockLockup = new DataLoader<{ seqno: number, shard: string, workchain: number }, liteServer_blockHeader, string>(async (s) => {
+        return await Promise.all(s.map((v) => lookupBlockByID(this.engine, v)));
+    }, { maxBatchSize: 1000, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+    #shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
+        return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
+    }, { maxBatchSize: 1000, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno })
 
     constructor(engine: LiteServerEngine) {
         this.engine = engine;
@@ -55,9 +116,10 @@ export class LiteClient {
         }, 5000));
 
         let account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
-
+        let balance: RawCurrencyCollection = { coins: ZERO };
         let lastTx: { lt: string, hash: Buffer } | null = null;
         if (account) {
+            balance = account.storage.balance;
             let shardState = parseShardStateUnsplit(Cell.fromBoc(res.proof)[1].refs[0].beginParse());
             let hashId = new BN(src.hash.toString('hex'), 'hex').toString(10);
             let pstate = shardState.accounts.get(hashId);
@@ -69,6 +131,7 @@ export class LiteClient {
         return {
             state: account,
             lastTx,
+            balance,
             raw: res.state,
             proof: res.proof,
             block: res.id,
@@ -109,18 +172,7 @@ export class LiteClient {
     //
 
     lookupBlockByID = async (props: { seqno: number, shard: string, workchain: number }) => {
-        return await this.engine.query(Functions.liteServer_lookupBlock, {
-            kind: 'liteServer.lookupBlock',
-            mode: 1,
-            id: {
-                kind: 'tonNode.blockId',
-                seqno: props.seqno,
-                shard: props.shard,
-                workchain: props.workchain
-            },
-            lt: null,
-            utime: null
-        }, 5000);
+        return await this.#blockLockup.load(props);
     }
 
     getBlockHeader = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
@@ -139,21 +191,7 @@ export class LiteClient {
     }
 
     getAllShardsInfo = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-        let res = (await this.engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
-        let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
-        let shards: { [key: string]: { [key: string]: number } } = {};
-        for (let p of parsed) {
-            shards[p[0]] = {};
-            for (let p2 of p[1]) {
-                shards[p[0]][p2[0]] = p2[1];
-            }
-        }
-        return {
-            id: res.id,
-            shards,
-            raw: res.data,
-            proof: res.proof
-        }
+        return this.#shardsLockup.load(props);
     }
 
     listBlockTransactions = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
@@ -173,5 +211,46 @@ export class LiteClient {
             after: null,
             wantProof: null
         }, 5000);
+    }
+
+    getFullBlock = async (seqno: number) => {
+
+        // MC Blocks
+        let [mcBlockId, mcBlockPrevId] = await Promise.all([
+            this.lookupBlockByID({ workchain: -1, shard: '-9223372036854775808', seqno: seqno }),
+            this.lookupBlockByID({ workchain: -1, shard: '-9223372036854775808', seqno: seqno - 1 })
+        ]);
+
+        // Shards
+        let [mcShards, mcShardsPrev] = await Promise.all([
+            this.getAllShardsInfo(mcBlockId.id),
+            this.getAllShardsInfo(mcBlockPrevId.id)
+        ]);
+
+        // Extract shards
+        let shards: {
+            workchain: number,
+            seqno: number,
+            shard: string
+        }[] = [];
+        shards.push({ seqno, workchain: -1, shard: '-9223372036854775808' });
+
+        // Extract shards
+        for (let wcs in mcShards.shards) {
+            let wc = parseInt(wcs, 10);
+            let psh = mcShardsPrev.shards[wcs] || {};
+
+            for (let shs in mcShards.shards[wcs]) {
+                let seqno = mcShards.shards[wcs][shs];
+                let prevSeqno = psh[shs] || seqno;
+                for (let s = prevSeqno + 1; s <= seqno; s++) {
+                    shards.push({ seqno: s, workchain: wc, shard: shs });
+                }
+            }
+        }
+
+        return {
+            shards
+        }
     }
 }

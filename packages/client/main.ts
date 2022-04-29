@@ -6,6 +6,9 @@ import { Address, Cell, parseDict, parseTransaction, Slice } from "ton";
 import util from 'util';
 import BN from "bn.js";
 import { parseShards } from "./parser/parseShards";
+import { formatDistance } from "date-fns";
+import { createBackoff } from "teslabot";
+const backoff = createBackoff();
 
 function intToIP(int: number) {
     var part1 = int & 255;
@@ -31,7 +34,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 async function main() {
 
     const engines: LiteServerEngine[] = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 500; i++) {
         engines.push(new LiteServerSingleEngine({
             host: intToIP(server.ip),
             port: server.port,
@@ -45,7 +48,7 @@ async function main() {
     let mc = await client.getMasterchainInfoExt();
     console.log('Read in ' + (Date.now() - start) + ' ms');
     console.warn(mc);
-    let seqno = 1;
+    let seqno = 10;
     let read = 0;
     start = Date.now();
 
@@ -80,7 +83,8 @@ async function main() {
     // state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
     // console.warn(util.inspect(state, false, null, true));
 
-    let block = await client.lookupBlockByID(state.shardBlock);
+    let block = await client.getFullBlock(123332);
+    console.warn(block);
     // let shards = await client.getAllShardsInfo(block.id);
     // for (let wc in shards.shards) {
     //     for (let sh in shards.shards[wc]) {
@@ -89,14 +93,14 @@ async function main() {
     //     }
     // }
 
-    console.warn(state.state!.storage.lastTransLt.toString(10));
-    // let lastest = await client.getAccountTransaction(Address.parse('EQCOcxb5n3-RrDkGbK_3DymwGjeVZbi65I3FmmBwrggDFN_z'), state.state!.storage.lastTransLt.toString(10), block.id);
-    // console.warn(lastest);
+    // console.warn(state.state!.storage.lastTransLt.toString(10));
+    // // let lastest = await client.getAccountTransaction(Address.parse('EQCOcxb5n3-RrDkGbK_3DymwGjeVZbi65I3FmmBwrggDFN_z'), state.state!.storage.lastTransLt.toString(10), block.id);
+    // // console.warn(lastest);
 
-    let transactions = await client.getAccountTransactions(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), state.lastTx!.lt, state.lastTx!.hash);
-    let txs = Cell.fromBoc(transactions.transactions).map((v) => parseTransaction(0, v.beginParse()));
-    console.warn(txs);
-    // console.warn(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7').hash.toString('hex'));
+    // let transactions = await client.getAccountTransactions(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), state.lastTx!.lt, state.lastTx!.hash);
+    // let txs = Cell.fromBoc(transactions.transactions).map((v) => parseTransaction(0, v.beginParse()));
+    // console.warn(txs);
+    // // console.warn(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7').hash.toString('hex'));
 
     while (true) {
 
@@ -107,21 +111,15 @@ async function main() {
 
         // Blocks
         let seqnos: number[] = [];
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 5000; i++) {
             seqnos.push(seqno++);
         }
         await Promise.all(seqnos.map(async (s) => {
-            let lk = await client.lookupBlockByID({
-                seqno: s,
-                shard: '-9223372036854775808',
-                workchain: -1
-            });
-            // let bh = await client.getBlockHeader(lk.id);
-            let shards = await client.getAllShardsInfo(lk.id);
-            return shards;
+            return backoff(() => client.getFullBlock(s));
         }));
         read += seqnos.length;
-        console.log('Read ' + read + ' in ' + (Date.now() - start) + ' ms');
+        let eta = (20_000_000 / read) * (Date.now() - start);
+        console.log('Read ' + read + ' in ' + (Date.now() - start) + ' ms, ETA: ' + formatDistance(eta, 0));
     }
 }
 
