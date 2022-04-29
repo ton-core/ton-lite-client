@@ -2620,10 +2620,10 @@ ton-crypto@2.1.0:
     ton-crypto-primitives "2.0.0"
     tweetnacl "1.0.3"
 
-ton-tl@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-0.1.4.tgz#50dded9617bf1babc9ad334c3b10ead187bca524"
-  integrity sha512-6dviKc5obg4idNFGl3g1voM4U36b+05gcHdsRNzFGqWZWTQP3y30TyWiD2s3flbbHa9I235u2slB2o/t04rXBw==
+ton-tl@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-0.2.1.tgz#8a918b8f38cf531dfcd293dae93a666f5d637f5b"
+  integrity sha512-HUWgpMhjtj2J1qzC1WCSEFNKNeXOqrjzdOVfdvoHX0X7e8w5w0Tr7GKZ40CKX6Wi/lsl6h5JkD/6EJqWB9fl0A==
   dependencies:
     "@types/bn.js" "^5.1.0"
     "@types/pegjs" "^0.10.3"
@@ -2632,10 +2632,10 @@ ton-tl@^0.1.4:
     crc-32 "^1.2.2"
     pegjs "^0.10.0"
 
-ton@^9.9.0:
-  version "9.9.0"
-  resolved "https://registry.yarnpkg.com/ton/-/ton-9.9.0.tgz#f966c8769fda7b58b24d6fe4aa7c9e79fe635b14"
-  integrity sha512-6t+/5b/6DbQH58ywJoc96CN1txcxXjZfYXk/vDeJClqfFR5Z9QikfoPGjLPHTkpLo8jALGPrcKnZDYIwU6biew==
+ton@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/ton/-/ton-10.0.0.tgz#49f27d286ded38a82ba4dd8ff682a512cc6f51c3"
+  integrity sha512-DXDmu5AJAn3OZp1Qnm3intdUf4iRb8gpymF4blOfIGLhRmyGlfF0vuZ/otFxwc8ME/3zkuLedlCQZRoD/7SpmQ==
   dependencies:
     axios "^0.25.0"
     bn.js "5.2.0"

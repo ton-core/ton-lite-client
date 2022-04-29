@@ -2,7 +2,7 @@ import { LiteServerEngine } from "./engines/engine";
 import { LiteServerSingleEngine } from "./engines/single";
 import { LiteServerRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address, Cell, parseDict, Slice } from "ton";
+import { Address, Cell, parseDict, parseTransaction, Slice } from "ton";
 import util from 'util';
 import BN from "bn.js";
 import { parseShards } from "./parser/parseShards";
@@ -49,7 +49,29 @@ async function main() {
     let read = 0;
     start = Date.now();
 
-    // let state = await client.getAccountState(Address.parse('Ef-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprKDH'), mc.last);
+    let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
+
+    console.warn(state);
+    // console.warn(QRoots.map((v) => v.isExotic));
+    // Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L396
+    // console.warn(stateRoot.readUintNumber(32).toString(16))
+    // console.warn(stateRoot.readUintNumber(32).toString(16))
+    // console.warn(QRoots[1]);
+    //     shard_state#9023afe2 global_id:int32
+    //   shard_id:ShardIdent 
+    //   seq_no:uint32 vert_seq_no:#
+    //   gen_utime:uint32 gen_lt:uint64
+    //   min_ref_mc_seqno:uint32
+    //   out_msg_queue_info:^OutMsgQueueInfo
+    //   before_split:(## 1)
+    //   accounts:^ShardAccounts
+    //   ^[ overload_history:uint64 underload_history:uint64
+    //   total_balance:CurrencyCollection
+    //   total_validator_fees:CurrencyCollection
+    //   libraries:(HashmapE 256 LibDescr)
+    //   master_ref:(Maybe BlkMasterInfo) ]
+    //   custom:(Maybe ^McStateExtra)
+    //   = ShardStateUnsplit;
     // console.warn(util.inspect(state, false, null, true));
 
     // state = await client.getAccountState(Address.parse('Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF'), mc.last);
@@ -58,9 +80,23 @@ async function main() {
     // state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
     // console.warn(util.inspect(state, false, null, true));
 
-    let block = await client.lookupBlockByID({ seqno: 9000001, shard: '-9223372036854775808', workchain: -1 });
-    let shards = await client.getAllShardsInfo(block.id);
-    console.warn(shards);
+    let block = await client.lookupBlockByID(state.shardBlock);
+    // let shards = await client.getAllShardsInfo(block.id);
+    // for (let wc in shards.shards) {
+    //     for (let sh in shards.shards[wc]) {
+    //         let ide = await client.lookupBlockByID({ seqno: shards.shards[wc][sh], shard: sh, workchain: parseInt(wc, 10) });
+    //         console.warn(await client.listBlockTransactions(ide.id));
+    //     }
+    // }
+
+    console.warn(state.state!.storage.lastTransLt.toString(10));
+    // let lastest = await client.getAccountTransaction(Address.parse('EQCOcxb5n3-RrDkGbK_3DymwGjeVZbi65I3FmmBwrggDFN_z'), state.state!.storage.lastTransLt.toString(10), block.id);
+    // console.warn(lastest);
+
+    let transactions = await client.getAccountTransactions(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), state.lastTx!.lt, state.lastTx!.hash);
+    let txs = Cell.fromBoc(transactions.transactions).map((v) => parseTransaction(0, v.beginParse()));
+    console.warn(txs);
+    // console.warn(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7').hash.toString('hex'));
 
     while (true) {
 

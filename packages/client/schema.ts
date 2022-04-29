@@ -156,6 +156,7 @@ export interface liteServer_transactionInfo {
 
 export interface liteServer_transactionList {
     readonly kind: 'liteServer.transactionList';
+    readonly ids: tonNode_blockIdExt[];
     readonly transactions: TLBytes;
 }
 
@@ -178,6 +179,7 @@ export interface liteServer_blockTransactions {
     readonly id: tonNode_blockIdExt;
     readonly reqCount: TLFlag;
     readonly incomplete: TLBool;
+    readonly ids: liteServer_transactionId[];
     readonly proof: TLBytes;
 }
 
@@ -191,6 +193,7 @@ export interface liteServer_signatureSet {
     readonly kind: 'liteServer.signatureSet';
     readonly validatorSetHash: TLInt;
     readonly catchainSeqno: TLInt;
+    readonly signatures: liteServer_signature[];
 }
 
 export interface liteServer_blockLinkBack {
@@ -218,6 +221,7 @@ export interface liteServer_partialBlockProof {
     readonly complete: TLBool;
     readonly from: tonNode_blockIdExt;
     readonly to: tonNode_blockIdExt;
+    readonly steps: liteServer_BlockLink[];
 }
 
 export interface liteServer_configInfo {
@@ -427,6 +431,7 @@ export interface liteServer_getConfigParams {
     readonly kind: 'liteServer.getConfigParams';
     readonly mode: TLFlag;
     readonly id: tonNode_blockIdExt;
+    readonly paramList: TLInt[];
 }
 
 export interface liteServer_getValidatorStats {
@@ -546,7 +551,7 @@ export const Functions = {
     } as TLFunction<liteServer_getConfigAll, liteServer_ConfigInfo>,
 
     liteServer_getConfigParams: {
-        encodeRequest: (src: liteServer_getConfigParams, encoder: TLWriteBuffer) => { encoder.writeInt32(-1627878045); Codecs.liteServer_getConfigParams.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getConfigParams, encoder: TLWriteBuffer) => { encoder.writeInt32(705764377); Codecs.liteServer_getConfigParams.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ConfigInfo.decode(decoder)
     } as TLFunction<liteServer_getConfigParams, liteServer_ConfigInfo>,
 
@@ -809,25 +814,25 @@ export const Codecs = {
             encoder.writeUInt32(src.mode);
             Codecs.tonNode_blockIdExt.encode(src.id, encoder);
             Codecs.tonNode_blockIdExt.encode(src.shardblk, encoder);
-            (src.mode && (1 << 0)) && !!src.shardProof && encoder.writeBuffer(src.shardProof);
-            (src.mode && (1 << 0)) && !!src.proof && encoder.writeBuffer(src.proof);
-            (src.mode && (1 << 1)) && !!src.stateProof && encoder.writeBuffer(src.stateProof);
-            (src.mode && (1 << 3)) && !!src.initC7 && encoder.writeBuffer(src.initC7);
-            (src.mode && (1 << 4)) && !!src.libExtras && encoder.writeBuffer(src.libExtras);
+            (src.mode & (1 << 0)) && !!src.shardProof && encoder.writeBuffer(src.shardProof);
+            (src.mode & (1 << 0)) && !!src.proof && encoder.writeBuffer(src.proof);
+            (src.mode & (1 << 1)) && !!src.stateProof && encoder.writeBuffer(src.stateProof);
+            (src.mode & (1 << 3)) && !!src.initC7 && encoder.writeBuffer(src.initC7);
+            (src.mode & (1 << 4)) && !!src.libExtras && encoder.writeBuffer(src.libExtras);
             encoder.writeInt32(src.exitCode);
-            (src.mode && (1 << 2)) && !!src.result && encoder.writeBuffer(src.result);
+            (src.mode & (1 << 2)) && !!src.result && encoder.writeBuffer(src.result);
         },
         decode: (decoder: TLReadBuffer): liteServer_runMethodResult => {
             let mode = decoder.readUInt32();
             let id = Codecs.tonNode_blockIdExt.decode(decoder);
             let shardblk = Codecs.tonNode_blockIdExt.decode(decoder);
-            let shardProof = (mode && (1 << 0)) ? decoder.readBuffer() : null;
-            let proof = (mode && (1 << 0)) ? decoder.readBuffer() : null;
-            let stateProof = (mode && (1 << 1)) ? decoder.readBuffer() : null;
-            let initC7 = (mode && (1 << 3)) ? decoder.readBuffer() : null;
-            let libExtras = (mode && (1 << 4)) ? decoder.readBuffer() : null;
+            let shardProof = (mode & (1 << 0)) ? decoder.readBuffer() : null;
+            let proof = (mode & (1 << 0)) ? decoder.readBuffer() : null;
+            let stateProof = (mode & (1 << 1)) ? decoder.readBuffer() : null;
+            let initC7 = (mode & (1 << 3)) ? decoder.readBuffer() : null;
+            let libExtras = (mode & (1 << 4)) ? decoder.readBuffer() : null;
             let exitCode = decoder.readInt32();
-            let result = (mode && (1 << 2)) ? decoder.readBuffer() : null;
+            let result = (mode & (1 << 2)) ? decoder.readBuffer() : null;
             return { kind: 'liteServer.runMethodResult', mode, id, shardblk, shardProof, proof, stateProof, initC7, libExtras, exitCode, result };
         },
     } as TLCodec<liteServer_runMethodResult>,
@@ -878,26 +883,28 @@ export const Codecs = {
 
     liteServer_transactionList: {
         encode: (src: liteServer_transactionList, encoder: TLWriteBuffer) => {
+            encoder.writeVector(Codecs.tonNode_blockIdExt.encode, src.ids);
             encoder.writeBuffer(src.transactions);
         },
         decode: (decoder: TLReadBuffer): liteServer_transactionList => {
+            let ids = decoder.readVector(Codecs.tonNode_blockIdExt.decode);
             let transactions = decoder.readBuffer();
-            return { kind: 'liteServer.transactionList', transactions };
+            return { kind: 'liteServer.transactionList', ids, transactions };
         },
     } as TLCodec<liteServer_transactionList>,
 
     liteServer_transactionId: {
         encode: (src: liteServer_transactionId, encoder: TLWriteBuffer) => {
             encoder.writeUInt32(src.mode);
-            (src.mode && (1 << 0)) && !!src.account && encoder.writeInt256(src.account);
-            (src.mode && (1 << 1)) && !!src.lt && encoder.writeInt64(src.lt);
-            (src.mode && (1 << 2)) && !!src.hash && encoder.writeInt256(src.hash);
+            (src.mode & (1 << 0)) && !!src.account && encoder.writeInt256(src.account);
+            (src.mode & (1 << 1)) && !!src.lt && encoder.writeInt64(src.lt);
+            (src.mode & (1 << 2)) && !!src.hash && encoder.writeInt256(src.hash);
         },
         decode: (decoder: TLReadBuffer): liteServer_transactionId => {
             let mode = decoder.readUInt32();
-            let account = (mode && (1 << 0)) ? decoder.readInt256() : null;
-            let lt = (mode && (1 << 1)) ? decoder.readInt64() : null;
-            let hash = (mode && (1 << 2)) ? decoder.readInt256() : null;
+            let account = (mode & (1 << 0)) ? decoder.readInt256() : null;
+            let lt = (mode & (1 << 1)) ? decoder.readInt64() : null;
+            let hash = (mode & (1 << 2)) ? decoder.readInt256() : null;
             return { kind: 'liteServer.transactionId', mode, account, lt, hash };
         },
     } as TLCodec<liteServer_transactionId>,
@@ -919,14 +926,16 @@ export const Codecs = {
             Codecs.tonNode_blockIdExt.encode(src.id, encoder);
             encoder.writeUInt32(src.reqCount);
             encoder.writeBool(src.incomplete);
+            encoder.writeVector(Codecs.liteServer_transactionId.encode, src.ids);
             encoder.writeBuffer(src.proof);
         },
         decode: (decoder: TLReadBuffer): liteServer_blockTransactions => {
             let id = Codecs.tonNode_blockIdExt.decode(decoder);
             let reqCount = decoder.readUInt32();
             let incomplete = decoder.readBool();
+            let ids = decoder.readVector(Codecs.liteServer_transactionId.decode);
             let proof = decoder.readBuffer();
-            return { kind: 'liteServer.blockTransactions', id, reqCount, incomplete, proof };
+            return { kind: 'liteServer.blockTransactions', id, reqCount, incomplete, ids, proof };
         },
     } as TLCodec<liteServer_blockTransactions>,
 
@@ -946,11 +955,13 @@ export const Codecs = {
         encode: (src: liteServer_signatureSet, encoder: TLWriteBuffer) => {
             encoder.writeInt32(src.validatorSetHash);
             encoder.writeInt32(src.catchainSeqno);
+            encoder.writeVector(Codecs.liteServer_signature.encode, src.signatures);
         },
         decode: (decoder: TLReadBuffer): liteServer_signatureSet => {
             let validatorSetHash = decoder.readInt32();
             let catchainSeqno = decoder.readInt32();
-            return { kind: 'liteServer.signatureSet', validatorSetHash, catchainSeqno };
+            let signatures = decoder.readVector(Codecs.liteServer_signature.decode);
+            return { kind: 'liteServer.signatureSet', validatorSetHash, catchainSeqno, signatures };
         },
     } as TLCodec<liteServer_signatureSet>,
 
@@ -999,12 +1010,14 @@ export const Codecs = {
             encoder.writeBool(src.complete);
             Codecs.tonNode_blockIdExt.encode(src.from, encoder);
             Codecs.tonNode_blockIdExt.encode(src.to, encoder);
+            encoder.writeVector(Codecs.liteServer_BlockLink.encode, src.steps);
         },
         decode: (decoder: TLReadBuffer): liteServer_partialBlockProof => {
             let complete = decoder.readBool();
             let from = Codecs.tonNode_blockIdExt.decode(decoder);
             let to = Codecs.tonNode_blockIdExt.decode(decoder);
-            return { kind: 'liteServer.partialBlockProof', complete, from, to };
+            let steps = decoder.readVector(Codecs.liteServer_BlockLink.decode);
+            return { kind: 'liteServer.partialBlockProof', complete, from, to, steps };
         },
     } as TLCodec<liteServer_partialBlockProof>,
 
@@ -1220,14 +1233,14 @@ export const Codecs = {
         encode: (src: liteServer_lookupBlock, encoder: TLWriteBuffer) => {
             encoder.writeUInt32(src.mode);
             Codecs.tonNode_blockId.encode(src.id, encoder);
-            (src.mode && (1 << 1)) && !!src.lt && encoder.writeInt64(src.lt);
-            (src.mode && (1 << 2)) && !!src.utime && encoder.writeInt32(src.utime);
+            (src.mode & (1 << 1)) && !!src.lt && encoder.writeInt64(src.lt);
+            (src.mode & (1 << 2)) && !!src.utime && encoder.writeInt32(src.utime);
         },
         decode: (decoder: TLReadBuffer): liteServer_lookupBlock => {
             let mode = decoder.readUInt32();
             let id = Codecs.tonNode_blockId.decode(decoder);
-            let lt = (mode && (1 << 1)) ? decoder.readInt64() : null;
-            let utime = (mode && (1 << 2)) ? decoder.readInt32() : null;
+            let lt = (mode & (1 << 1)) ? decoder.readInt64() : null;
+            let utime = (mode & (1 << 2)) ? decoder.readInt32() : null;
             return { kind: 'liteServer.lookupBlock', mode, id, lt, utime };
         },
     } as TLCodec<liteServer_lookupBlock>,
@@ -1237,17 +1250,17 @@ export const Codecs = {
             Codecs.tonNode_blockIdExt.encode(src.id, encoder);
             encoder.writeUInt32(src.mode);
             encoder.writeUInt32(src.count);
-            (src.mode && (1 << 7)) && !!src.after && Codecs.liteServer_transactionId3.encode(src.after, encoder);
-            (src.mode && (1 << 6)) && !!src.reverseOrder && encoder.writeBool(src.reverseOrder);
-            (src.mode && (1 << 5)) && !!src.wantProof && encoder.writeBool(src.wantProof);
+            (src.mode & (1 << 7)) && !!src.after && Codecs.liteServer_transactionId3.encode(src.after, encoder);
+            (src.mode & (1 << 6)) && !!src.reverseOrder && encoder.writeBool(src.reverseOrder);
+            (src.mode & (1 << 5)) && !!src.wantProof && encoder.writeBool(src.wantProof);
         },
         decode: (decoder: TLReadBuffer): liteServer_listBlockTransactions => {
             let id = Codecs.tonNode_blockIdExt.decode(decoder);
             let mode = decoder.readUInt32();
             let count = decoder.readUInt32();
-            let after = (mode && (1 << 7)) ? Codecs.liteServer_transactionId3.decode(decoder) : null;
-            let reverseOrder = (mode && (1 << 6)) ? decoder.readBool() : null;
-            let wantProof = (mode && (1 << 5)) ? decoder.readBool() : null;
+            let after = (mode & (1 << 7)) ? Codecs.liteServer_transactionId3.decode(decoder) : null;
+            let reverseOrder = (mode & (1 << 6)) ? decoder.readBool() : null;
+            let wantProof = (mode & (1 << 5)) ? decoder.readBool() : null;
             return { kind: 'liteServer.listBlockTransactions', id, mode, count, after, reverseOrder, wantProof };
         },
     } as TLCodec<liteServer_listBlockTransactions>,
@@ -1256,12 +1269,12 @@ export const Codecs = {
         encode: (src: liteServer_getBlockProof, encoder: TLWriteBuffer) => {
             encoder.writeUInt32(src.mode);
             Codecs.tonNode_blockIdExt.encode(src.knownBlock, encoder);
-            (src.mode && (1 << 0)) && !!src.targetBlock && Codecs.tonNode_blockIdExt.encode(src.targetBlock, encoder);
+            (src.mode & (1 << 0)) && !!src.targetBlock && Codecs.tonNode_blockIdExt.encode(src.targetBlock, encoder);
         },
         decode: (decoder: TLReadBuffer): liteServer_getBlockProof => {
             let mode = decoder.readUInt32();
             let knownBlock = Codecs.tonNode_blockIdExt.decode(decoder);
-            let targetBlock = (mode && (1 << 0)) ? Codecs.tonNode_blockIdExt.decode(decoder) : null;
+            let targetBlock = (mode & (1 << 0)) ? Codecs.tonNode_blockIdExt.decode(decoder) : null;
             return { kind: 'liteServer.getBlockProof', mode, knownBlock, targetBlock };
         },
     } as TLCodec<liteServer_getBlockProof>,
@@ -1282,11 +1295,13 @@ export const Codecs = {
         encode: (src: liteServer_getConfigParams, encoder: TLWriteBuffer) => {
             encoder.writeUInt32(src.mode);
             Codecs.tonNode_blockIdExt.encode(src.id, encoder);
+            encoder.writeVector((s, d) => d.writeInt32(s), src.paramList);
         },
         decode: (decoder: TLReadBuffer): liteServer_getConfigParams => {
             let mode = decoder.readUInt32();
             let id = Codecs.tonNode_blockIdExt.decode(decoder);
-            return { kind: 'liteServer.getConfigParams', mode, id };
+            let paramList = decoder.readVector((d) => d.readInt32());
+            return { kind: 'liteServer.getConfigParams', mode, id, paramList };
         },
     } as TLCodec<liteServer_getConfigParams>,
 
@@ -1295,15 +1310,15 @@ export const Codecs = {
             encoder.writeUInt32(src.mode);
             Codecs.tonNode_blockIdExt.encode(src.id, encoder);
             encoder.writeInt32(src.limit);
-            (src.mode && (1 << 0)) && !!src.startAfter && encoder.writeInt256(src.startAfter);
-            (src.mode && (1 << 2)) && !!src.modifiedAfter && encoder.writeInt32(src.modifiedAfter);
+            (src.mode & (1 << 0)) && !!src.startAfter && encoder.writeInt256(src.startAfter);
+            (src.mode & (1 << 2)) && !!src.modifiedAfter && encoder.writeInt32(src.modifiedAfter);
         },
         decode: (decoder: TLReadBuffer): liteServer_getValidatorStats => {
             let mode = decoder.readUInt32();
             let id = Codecs.tonNode_blockIdExt.decode(decoder);
             let limit = decoder.readInt32();
-            let startAfter = (mode && (1 << 0)) ? decoder.readInt256() : null;
-            let modifiedAfter = (mode && (1 << 2)) ? decoder.readInt32() : null;
+            let startAfter = (mode & (1 << 0)) ? decoder.readInt256() : null;
+            let modifiedAfter = (mode & (1 << 2)) ? decoder.readInt32() : null;
             return { kind: 'liteServer.getValidatorStats', mode, id, limit, startAfter, modifiedAfter };
         },
     } as TLCodec<liteServer_getValidatorStats>,
@@ -1711,7 +1726,7 @@ export const Codecs = {
         encode: (src: liteServer_TransactionList, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.transactionList') {
-                encoder.writeInt32(-1188112483);
+                encoder.writeInt32(1864812043);
                 Codecs.liteServer_transactionList.encode(src, encoder);
                 return;
             }
@@ -1719,7 +1734,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_TransactionList => {
             const kind = decoder.readInt32();
-            if (kind === -1188112483) {
+            if (kind === 1864812043) {
                 return Codecs.liteServer_transactionList.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1768,7 +1783,7 @@ export const Codecs = {
         encode: (src: liteServer_BlockTransactions, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockTransactions') {
-                encoder.writeInt32(794061916);
+                encoder.writeInt32(-1114854101);
                 Codecs.liteServer_blockTransactions.encode(src, encoder);
                 return;
             }
@@ -1776,7 +1791,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockTransactions => {
             const kind = decoder.readInt32();
-            if (kind === 794061916) {
+            if (kind === -1114854101) {
                 return Codecs.liteServer_blockTransactions.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1806,7 +1821,7 @@ export const Codecs = {
         encode: (src: liteServer_SignatureSet, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.signatureSet') {
-                encoder.writeInt32(-1830726249);
+                encoder.writeInt32(-163272986);
                 Codecs.liteServer_signatureSet.encode(src, encoder);
                 return;
             }
@@ -1814,7 +1829,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_SignatureSet => {
             const kind = decoder.readInt32();
-            if (kind === -1830726249) {
+            if (kind === -163272986) {
                 return Codecs.liteServer_signatureSet.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1852,7 +1867,7 @@ export const Codecs = {
         encode: (src: liteServer_PartialBlockProof, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.partialBlockProof') {
-                encoder.writeInt32(221128719);
+                encoder.writeInt32(-1898917183);
                 Codecs.liteServer_partialBlockProof.encode(src, encoder);
                 return;
             }
@@ -1860,7 +1875,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_PartialBlockProof => {
             const kind = decoder.readInt32();
-            if (kind === 221128719) {
+            if (kind === -1898917183) {
                 return Codecs.liteServer_partialBlockProof.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
