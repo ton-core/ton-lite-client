@@ -10,7 +10,7 @@
     "emitDecoratorMetadata": true,
     "sourceMap": false,
     "allowJs": false,
-    "outDir": "build/packages",
+    "outDir": "dist",
     "esModuleInterop": true,
     "declaration": true,
     "strictNullChecks": true,
