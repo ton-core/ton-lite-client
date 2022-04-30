@@ -3,7 +3,7 @@ import { Address, Cell, parseAccount, RawCurrencyCollection } from "ton";
 import { parseShardStateUnsplit } from "ton/dist/block/parse";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
-import { Functions, liteServer_blockHeader, tonNode_blockIdExt } from "./schema";
+import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
 import DataLoader from 'dataloader';
 import { createBackoff } from "teslabot";
 
@@ -205,7 +205,17 @@ export class LiteClient {
         return this.#shardsLockup.load(block);
     }
 
-    listBlockTransactions = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    listBlockTransactions = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, args?: {
+        mode: number,
+        count: number,
+        after?: liteServer_transactionId3 | null | undefined,
+        wantProof?: boolean
+    }) => {
+
+        let mode = args?.mode || 1 + 2 + 4;
+        let count = args?.count || 100;
+        let after: liteServer_transactionId3 | null = args && args.after ? args.after : null;
+
         return await this.engine.query(Functions.liteServer_listBlockTransactions, {
             kind: 'liteServer.listBlockTransactions',
             id: {
@@ -216,10 +226,10 @@ export class LiteClient {
                 rootHash: block.rootHash,
                 fileHash: block.fileHash
             },
-            mode: 1 + 2 + 4 + 32,
-            count: 100,
+            mode,
+            count,
             reverseOrder: null,
-            after: null,
+            after,
             wantProof: null
         }, 5000);
     }
@@ -260,8 +270,33 @@ export class LiteClient {
             }
         }
 
+        // Fetch transactions and blocks
+        let shards2 = await Promise.all(shards.map(async (shard) => {
+            let blockId = await this.lookupBlockByID(shard);
+            let transactions: liteServer_transactionId[] = [];
+            let after: liteServer_transactionId3 | null = null;
+            while (true) {
+                let tr = await this.listBlockTransactions(blockId.id, { count: 50, mode: 1 + 2 + 4 });
+                for (let t of tr.ids) {
+                    transactions.push(t);
+                }
+                if (!tr.incomplete) {
+                    break;
+                }
+                after = { kind: 'liteServer.transactionId3', account: tr.ids[tr.ids.length - 1].account!, lt: tr.ids[tr.ids.length - 1].lt! };
+            }
+            let mapped = transactions.map((t) => ({ hash: t.hash!, lt: t.lt!, account: t.account! }));
+
+            return {
+                ...shard,
+                rootHash: blockId.id.rootHash,
+                fileHash: blockId.id.fileHash,
+                transactions: mapped
+            }
+        }));
+
         return {
-            shards
-        }
+            shards: shards2
+        };
     }
 }

@@ -5,6 +5,7 @@ import { LiteClient } from "./client";
 import { Address } from "ton";
 import { formatDistance } from "date-fns";
 import { createBackoff } from "teslabot";
+import { inspect } from "util";
 const backoff = createBackoff();
 
 function intToIP(int: number) {
@@ -17,11 +18,11 @@ function intToIP(int: number) {
 }
 
 let server = {
-    "ip": -1903916592,
-    "port": 34953,
+    "ip": -1468558020,
+    "port": 20640,
     "id": {
         "@type": "pub.ed25519",
-        "key": "0GyV06xd4VSFxcINDELUDzg3pAtI3tca1FEcv368TdM="
+        "key": "D/ezwjebrDbjs2rpaY3pYrewsI4qcu65HNNq/fim13U="
     }
 }
 
@@ -31,7 +32,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 async function main() {
 
     const engines: LiteEngine[] = [];
-    for (let i = 0; i < 5000; i++) {
+    for (let i = 0; i < 50; i++) {
         engines.push(new LiteSingleEngine({
             host: intToIP(server.ip),
             port: server.port,
@@ -81,7 +82,7 @@ async function main() {
     // console.warn(util.inspect(state, false, null, true));
 
     let block = await client.getFullBlock(123332);
-    console.warn(block);
+    console.warn(inspect(block, false, null, true));
     // let shards = await client.getAllShardsInfo(block.id);
     // for (let wc in shards.shards) {
     //     for (let sh in shards.shards[wc]) {
