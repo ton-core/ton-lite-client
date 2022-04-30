@@ -1,4 +1,4 @@
 export { LiteClient } from './client';
-export { LiteServerEngine } from './engines/engine';
-export { LiteServerSingleEngine } from './engines/single';
-export { LiteServerRoundRobinEngine } from './engines/roundRobin';
+export { LiteEngine } from './engines/engine';
+export { LiteSingleEngine } from './engines/single';
+export { LiteRoundRobinEngine } from './engines/roundRobin';

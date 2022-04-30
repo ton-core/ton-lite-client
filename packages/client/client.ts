@@ -1,14 +1,20 @@
 import BN from "bn.js";
 import { Address, Cell, parseAccount, RawCurrencyCollection } from "ton";
 import { parseShardStateUnsplit } from "ton/dist/block/parse";
-import { LiteServerEngine } from "./engines/engine";
+import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, tonNode_blockIdExt } from "./schema";
 import DataLoader from 'dataloader';
+import { createBackoff } from "teslabot";
 
 const ZERO = new BN(0);
+const backoff = createBackoff({ onError: (e, i) => i > 3 && console.warn(e) });
 
-const lookupBlockByID = async (engine: LiteServerEngine, props: { seqno: number, shard: string, workchain: number }) => {
+//
+// Ops
+//
+
+const lookupBlockByID = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number }) => {
     return await engine.query(Functions.liteServer_lookupBlock, {
         kind: 'liteServer.lookupBlock',
         mode: 1,
@@ -33,7 +39,7 @@ type AllShardsResponse = {
     raw: Buffer;
     proof: Buffer;
 }
-const getAllShardsInfo = async (engine: LiteServerEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
     let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
     let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
     let shards: { [key: string]: { [key: string]: number } } = {};
@@ -51,26 +57,42 @@ const getAllShardsInfo = async (engine: LiteServerEngine, props: { seqno: number
     }
 }
 
-// id: tonNode_blockIdExt;
-// shards: {
-//     [key: string]: {
-//         [key: string]: number;
-//     };
-// };
-// raw: Buffer;
-// proof: Buffer;
+const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    return await engine.query(Functions.liteServer_getBlockHeader, {
+        kind: 'liteServer.getBlockHeader',
+        mode: 1,
+        id: {
+            kind: 'tonNode.blockIdExt',
+            seqno: props.seqno,
+            shard: props.shard,
+            workchain: props.workchain,
+            rootHash: props.rootHash,
+            fileHash: props.fileHash
+        }
+    }, 5000);
+}
 
 export class LiteClient {
-    readonly engine: LiteServerEngine;
-    #blockLockup = new DataLoader<{ seqno: number, shard: string, workchain: number }, liteServer_blockHeader, string>(async (s) => {
-        return await Promise.all(s.map((v) => lookupBlockByID(this.engine, v)));
-    }, { maxBatchSize: 1000, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
-    #shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
-        return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
-    }, { maxBatchSize: 1000, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno })
+    readonly engine: LiteEngine;
+    #blockLockup: DataLoader<{ seqno: number, shard: string, workchain: number }, liteServer_blockHeader, string>;
+    #shardsLockup: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>;
+    #blockHeader: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, liteServer_blockHeader, string>;
 
-    constructor(engine: LiteServerEngine) {
-        this.engine = engine;
+    constructor(opts: { engine: LiteEngine, batchSize?: number | undefined | null }) {
+        this.engine = opts.engine;
+        let batchSize = typeof opts.batchSize === 'number' ? opts.batchSize : 100;
+
+        this.#blockLockup = new DataLoader(async (s) => {
+            return await Promise.all(s.map((v) => lookupBlockByID(this.engine, v)));
+        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+
+        this.#blockHeader = new DataLoader(async (s) => {
+            return await Promise.all(s.map((v) => getBlockHeader(this.engine, v)));
+        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+
+        this.#shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
+            return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
+        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
     }
 
     //
@@ -97,23 +119,23 @@ export class LiteClient {
     // Account
     //
 
-    getAccountState = async (src: Address, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, timeout: number = 5000) => {
         let res = (await this.engine.query(Functions.liteServer_getAccountState, {
             kind: 'liteServer.getAccountState',
             id: {
                 kind: 'tonNode.blockIdExt',
-                seqno: props.seqno,
-                shard: props.shard,
-                workchain: props.workchain,
-                fileHash: props.fileHash,
-                rootHash: props.rootHash
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                fileHash: block.fileHash,
+                rootHash: block.rootHash
             },
             account: {
                 kind: 'liteServer.accountId',
                 workchain: src.workChain,
                 id: src.hash
             }
-        }, 5000));
+        }, timeout));
 
         let account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
         let balance: RawCurrencyCollection = { coins: ZERO };
@@ -140,10 +162,10 @@ export class LiteClient {
         }
     }
 
-    getAccountTransaction = async (src: Address, lt: string, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getAccountTransaction = async (src: Address, lt: string, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
         return await this.engine.query(Functions.liteServer_getOneTransaction, {
             kind: 'liteServer.getOneTransaction',
-            id: props,
+            id: block,
             account: {
                 kind: 'liteServer.accountId',
                 workchain: src.workChain,
@@ -171,39 +193,28 @@ export class LiteClient {
     // Block
     //
 
-    lookupBlockByID = async (props: { seqno: number, shard: string, workchain: number }) => {
-        return await this.#blockLockup.load(props);
+    lookupBlockByID = async (block: { seqno: number, shard: string, workchain: number }) => {
+        return await this.#blockLockup.load(block);
     }
 
-    getBlockHeader = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-        return await this.engine.query(Functions.liteServer_getBlockHeader, {
-            kind: 'liteServer.getBlockHeader',
-            mode: 1,
-            id: {
-                kind: 'tonNode.blockIdExt',
-                seqno: props.seqno,
-                shard: props.shard,
-                workchain: props.workchain,
-                rootHash: props.rootHash,
-                fileHash: props.fileHash
-            }
-        }, 5000);
+    getBlockHeader = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+        return this.#blockHeader.load(block);
     }
 
-    getAllShardsInfo = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-        return this.#shardsLockup.load(props);
+    getAllShardsInfo = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+        return this.#shardsLockup.load(block);
     }
 
-    listBlockTransactions = async (props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    listBlockTransactions = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
         return await this.engine.query(Functions.liteServer_listBlockTransactions, {
             kind: 'liteServer.listBlockTransactions',
             id: {
                 kind: 'tonNode.blockIdExt',
-                seqno: props.seqno,
-                shard: props.shard,
-                workchain: props.workchain,
-                rootHash: props.rootHash,
-                fileHash: props.fileHash
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                rootHash: block.rootHash,
+                fileHash: block.fileHash
             },
             mode: 1 + 2 + 4 + 32,
             count: 100,

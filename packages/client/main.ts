@@ -1,11 +1,8 @@
-import { LiteServerEngine } from "./engines/engine";
-import { LiteServerSingleEngine } from "./engines/single";
-import { LiteServerRoundRobinEngine } from "./engines/roundRobin";
+import { LiteEngine } from "./engines/engine";
+import { LiteSingleEngine } from "./engines/single";
+import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address, Cell, parseDict, parseTransaction, Slice } from "ton";
-import util from 'util';
-import BN from "bn.js";
-import { parseShards } from "./parser/parseShards";
+import { Address } from "ton";
 import { formatDistance } from "date-fns";
 import { createBackoff } from "teslabot";
 const backoff = createBackoff();
@@ -20,11 +17,11 @@ function intToIP(int: number) {
 }
 
 let server = {
-    "ip": -1468558020,
-    "port": 20640,
+    "ip": -1903916592,
+    "port": 34953,
     "id": {
         "@type": "pub.ed25519",
-        "key": "D/ezwjebrDbjs2rpaY3pYrewsI4qcu65HNNq/fim13U="
+        "key": "0GyV06xd4VSFxcINDELUDzg3pAtI3tca1FEcv368TdM="
     }
 }
 
@@ -33,16 +30,16 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 async function main() {
 
-    const engines: LiteServerEngine[] = [];
-    for (let i = 0; i < 500; i++) {
-        engines.push(new LiteServerSingleEngine({
+    const engines: LiteEngine[] = [];
+    for (let i = 0; i < 5000; i++) {
+        engines.push(new LiteSingleEngine({
             host: intToIP(server.ip),
             port: server.port,
             publicKey: Buffer.from(server.id.key, 'base64')
         }));
     }
-    const engine: LiteServerEngine = new LiteServerRoundRobinEngine(engines);
-    const client = new LiteClient(engine);
+    const engine: LiteEngine = new LiteRoundRobinEngine(engines);
+    const client = new LiteClient({ engine });
 
     let start = Date.now();
     let mc = await client.getMasterchainInfoExt();
@@ -111,7 +108,7 @@ async function main() {
 
         // Blocks
         let seqnos: number[] = [];
-        for (let i = 0; i < 5000; i++) {
+        for (let i = 0; i < 500; i++) {
             seqnos.push(seqno++);
         }
         await Promise.all(seqnos.map(async (s) => {

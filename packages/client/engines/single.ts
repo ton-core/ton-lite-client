@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
 import { ADNLClient } from "../../adnl";
 import { Codecs, Functions } from "../schema";
-import { LiteServerEngine } from "./engine";
+import { LiteEngine } from "./engine";
 
 type QueryReference = {
     f: TLFunction<any, any>;
@@ -12,7 +12,7 @@ type QueryReference = {
     timeout: number;
 };
 
-export class LiteServerSingleEngine implements LiteServerEngine {
+export class LiteSingleEngine implements LiteEngine {
 
     readonly host: string
     readonly port: number;
@@ -59,7 +59,11 @@ export class LiteServerSingleEngine implements LiteServerEngine {
 
             // Query timeout
             setTimeout(() => {
-
+                let ex = this.#queries.get(id.toString('hex'));
+                if (ex) {
+                    this.#queries.delete(id.toString('hex'));
+                    ex.reject(new Error('Timeout'));
+                }
             }, timeout);
         });
     }

@@ -1,11 +1,11 @@
 import { TLFunction } from "ton-tl";
-import { LiteServerEngine } from "./engine";
+import { LiteEngine } from "./engine";
 
-export class LiteServerRoundRobinEngine implements LiteServerEngine {
+export class LiteRoundRobinEngine implements LiteEngine {
 
-    readonly engines: LiteServerEngine[];
+    readonly engines: LiteEngine[];
 
-    constructor(engines: LiteServerEngine[]) {
+    constructor(engines: LiteEngine[]) {
         this.engines = engines;
     }
 
