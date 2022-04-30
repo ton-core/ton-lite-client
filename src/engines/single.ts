@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
-import { ADNLClient } from "../../adnl";
+import { ADNLClient } from "../adnl";
 import { Codecs, Functions } from "../schema";
 import { LiteEngine } from "./engine";
 
