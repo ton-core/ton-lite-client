@@ -1,8 +1,15 @@
 {
   "name": "ton-lite-client",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
+  "scripts": {
+    "build": "rm -fr dist && tsc --declaration",
+    "release": "yarn build && yarn publish"
+  },
   "devDependencies": {
     "@types/node": "^17.0.27",
     "@types/pegjs": "^0.10.3",
