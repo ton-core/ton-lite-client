@@ -29,7 +29,7 @@ export class LiteSingleEngine implements LiteEngine {
         this.connect();
     }
 
-    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, timeout: number): Promise<RES> {
+    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
         let id = randomBytes(32);
 
         // Request
@@ -39,6 +39,9 @@ export class LiteSingleEngine implements LiteEngine {
 
         // Lite server query
         let lsQuery = new TLWriteBuffer();
+        if (args.awaitSeqno !== undefined) {
+            Functions.liteServer_waitMasterchainSeqno.encodeRequest({ kind: 'liteServer.waitMasterchainSeqno', seqno: args.awaitSeqno, timeoutMs: 1000 }, lsQuery);
+        }
         Functions.liteServer_query.encodeRequest({ kind: 'liteServer.query', data: body }, lsQuery);
         let lsbody = lsQuery.build();
 
@@ -55,7 +58,7 @@ export class LiteSingleEngine implements LiteEngine {
             }
 
             // Register query
-            this.#queries.set(id.toString('hex'), { resolver: resolve, reject, f, packet, timeout });
+            this.#queries.set(id.toString('hex'), { resolver: resolve, reject, f, packet, timeout: args.timeout });
 
             // Query timeout
             setTimeout(() => {
@@ -64,7 +67,7 @@ export class LiteSingleEngine implements LiteEngine {
                     this.#queries.delete(id.toString('hex'));
                     ex.reject(new Error('Timeout'));
                 }
-            }, timeout);
+            }, args.timeout);
         });
     }
 

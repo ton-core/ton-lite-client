@@ -6,6 +6,7 @@ import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
 import DataLoader from 'dataloader';
 import { createBackoff } from "teslabot";
+import { crc16 } from "./utils/crc16";
 
 const ZERO = new BN(0);
 const backoff = createBackoff({ onError: (e, i) => i > 3 && console.warn(e) });
@@ -26,7 +27,7 @@ const lookupBlockByID = async (engine: LiteEngine, props: { seqno: number, shard
         },
         lt: null,
         utime: null
-    }, 5000);
+    }, { timeout: 5000 });
 }
 
 type AllShardsResponse = {
@@ -40,7 +41,7 @@ type AllShardsResponse = {
     proof: Buffer;
 }
 const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-    let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, 5000));
+    let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, { timeout: 5000 }));
     let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
     let shards: { [key: string]: { [key: string]: number } } = {};
     for (let p of parsed) {
@@ -69,7 +70,7 @@ const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard:
             rootHash: props.rootHash,
             fileHash: props.fileHash
         }
-    }, 5000);
+    }, { timeout: 5000 });
 }
 
 export class LiteClient {
@@ -100,19 +101,19 @@ export class LiteClient {
     //
 
     getMasterchainInfo = async () => {
-        return this.engine.query(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.masterchainInfo' }, 5000);
+        return this.engine.query(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.masterchainInfo' }, { timeout: 5000 });
     }
 
     getMasterchainInfoExt = async () => {
-        return this.engine.query(Functions.liteServer_getMasterchainInfoExt, { kind: 'liteServer.masterchainInfoExt', mode: 0 }, 5000);
+        return this.engine.query(Functions.liteServer_getMasterchainInfoExt, { kind: 'liteServer.masterchainInfoExt', mode: 0 }, { timeout: 5000 });
     }
 
     getCurrentTime = async () => {
-        return (await this.engine.query(Functions.liteServer_getTime, { kind: 'liteServer.getTime' }, 5000)).now;
+        return (await this.engine.query(Functions.liteServer_getTime, { kind: 'liteServer.getTime' }, { timeout: 5000 })).now;
     }
 
     getVersion = async () => {
-        return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, 5000));
+        return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, { timeout: 5000 }));
     }
 
     //
@@ -135,7 +136,7 @@ export class LiteClient {
                 workchain: src.workChain,
                 id: src.hash
             }
-        }, timeout));
+        }, { timeout }));
 
         let account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
         let balance: RawCurrencyCollection = { coins: ZERO };
@@ -172,7 +173,7 @@ export class LiteClient {
                 id: src.hash
             },
             lt: lt
-        }, 5000);
+        }, { timeout: 5000 });
     }
 
     getAccountTransactions = async (src: Address, lt: string, hash: Buffer) => {
@@ -186,7 +187,47 @@ export class LiteClient {
             },
             lt: lt,
             hash: hash
-        }, 5000);
+        }, { timeout: 5000 });
+    }
+
+    runMethod = async (src: Address, method: string, params: Buffer, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+        let res = await this.engine.query(Functions.liteServer_runSmcMethod, {
+            kind: 'liteServer.runSmcMethod',
+            mode: 4,
+            id: {
+                kind: 'tonNode.blockIdExt',
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                rootHash: block.rootHash,
+                fileHash: block.fileHash
+            },
+            account: {
+                kind: 'liteServer.accountId',
+                workchain: src.workChain,
+                id: src.hash
+            },
+            methodId: ((crc16(method) & 0xffff) | 0x10000) + '',
+            params
+        }, { timeout: 5000 });
+        return {
+            exitCode: res.exitCode,
+            result: res.result ? res.result.toString('base64') : null,
+            block: {
+                seqno: res.id.seqno,
+                shard: res.id.shard,
+                workchain: res.id.workchain,
+                rootHash: res.id.rootHash,
+                fileHash: res.id.fileHash
+            },
+            shardBlock: {
+                seqno: res.shardblk.seqno,
+                shard: res.shardblk.shard,
+                workchain: res.shardblk.workchain,
+                rootHash: res.shardblk.rootHash,
+                fileHash: res.shardblk.fileHash
+            },
+        }
     }
 
     //
@@ -231,7 +272,7 @@ export class LiteClient {
             reverseOrder: null,
             after,
             wantProof: null
-        }, 5000);
+        }, { timeout: 5000 });
     }
 
     getFullBlock = async (seqno: number) => {

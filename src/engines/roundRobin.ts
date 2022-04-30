@@ -9,9 +9,9 @@ export class LiteRoundRobinEngine implements LiteEngine {
         this.engines = engines;
     }
 
-    query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, timeout: number): Promise<RES> {
+    query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
         let id = Math.floor(Math.random() * this.engines.length);
-        return this.engines[id].query(f, req, timeout);
+        return this.engines[id].query(f, req, args);
     }
 
     close() {

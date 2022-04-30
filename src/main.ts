@@ -2,7 +2,7 @@ import { LiteEngine } from "./engines/engine";
 import { LiteSingleEngine } from "./engines/single";
 import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address } from "ton";
+import { Address, Cell } from "ton";
 import { formatDistance } from "date-fns";
 import { createBackoff } from "teslabot";
 import { inspect } from "util";
@@ -46,13 +46,15 @@ async function main() {
     let mc = await client.getMasterchainInfoExt();
     console.log('Read in ' + (Date.now() - start) + ' ms');
     console.warn(mc);
-    let seqno = 10;
-    let read = 0;
+    // let seqno = 10;
+    // let read = 0;
     start = Date.now();
 
-    let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
+    let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_members_raw', Buffer.alloc(0), mc.last);
+    console.warn(res);
+    // let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
 
-    console.warn(state);
+    // console.warn(state);
     // console.warn(QRoots.map((v) => v.isExotic));
     // Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L396
     // console.warn(stateRoot.readUintNumber(32).toString(16))
@@ -81,8 +83,8 @@ async function main() {
     // state = await client.getAccountState(Address.parse('Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn'), mc.last);
     // console.warn(util.inspect(state, false, null, true));
 
-    let block = await client.getFullBlock(123332);
-    console.warn(inspect(block, false, null, true));
+    // let block = await client.getFullBlock(123332);
+    // console.warn(inspect(block, false, null, true));
     // let shards = await client.getAllShardsInfo(block.id);
     // for (let wc in shards.shards) {
     //     for (let sh in shards.shards[wc]) {
@@ -100,25 +102,29 @@ async function main() {
     // console.warn(txs);
     // // console.warn(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7').hash.toString('hex'));
 
-    while (true) {
+    // let lastmc = mc.last.seqno;
+    // while (true) {
 
-        // MC
+    //     // MC
+    //     let res = await client.getMasterchainInfoAfter(lastmc + 1);
+    //     console.warn(res);
+    //     // lastmc = res.last.seqno;
 
 
-        // await delay(1000);
+    //     // await delay(1000);
 
-        // Blocks
-        let seqnos: number[] = [];
-        for (let i = 0; i < 500; i++) {
-            seqnos.push(seqno++);
-        }
-        await Promise.all(seqnos.map(async (s) => {
-            return backoff(() => client.getFullBlock(s));
-        }));
-        read += seqnos.length;
-        let eta = (20_000_000 / read) * (Date.now() - start);
-        console.log('Read ' + read + ' in ' + (Date.now() - start) + ' ms, ETA: ' + formatDistance(eta, 0));
-    }
+    //     // Blocks
+    //     // let seqnos: number[] = [];
+    //     // for (let i = 0; i < 500; i++) {
+    //     //     seqnos.push(seqno++);
+    //     // }
+    //     // await Promise.all(seqnos.map(async (s) => {
+    //     //     return backoff(() => client.getFullBlock(s));
+    //     // }));
+    //     // read += seqnos.length;
+    //     // let eta = (20_000_000 / read) * (Date.now() - start);
+    //     // console.log('Read ' + read + ' in ' + (Date.now() - start) + ' ms, ETA: ' + formatDistance(eta, 0));
+    // }
 }
 
 main()
