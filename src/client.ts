@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { Address, Cell, parseAccount, RawCurrencyCollection } from "ton";
+import { Address, Cell, parseAccount, RawCurrencyCollection, RawStorageInfo, RawAccountStorage } from "ton";
 import { parseShardStateUnsplit } from "ton/dist/block/parse";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
@@ -138,16 +138,23 @@ export class LiteClient {
             }
         }, { timeout }));
 
-        let account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
+        let account: {
+            address: Address | null;
+            storageStat: RawStorageInfo;
+            storage: RawAccountStorage;
+        } | null = null
         let balance: RawCurrencyCollection = { coins: ZERO };
         let lastTx: { lt: string, hash: Buffer } | null = null;
-        if (account) {
-            balance = account.storage.balance;
-            let shardState = parseShardStateUnsplit(Cell.fromBoc(res.proof)[1].refs[0].beginParse());
-            let hashId = new BN(src.hash.toString('hex'), 'hex').toString(10);
-            let pstate = shardState.accounts.get(hashId);
-            if (pstate) {
-                lastTx = { hash: pstate.shardAccount.lastTransHash, lt: pstate.shardAccount.lastTransLt.toString(10) };
+        if (res.state.length > 0) {
+            account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
+            if (account) {
+                balance = account.storage.balance;
+                let shardState = parseShardStateUnsplit(Cell.fromBoc(res.proof)[1].refs[0].beginParse());
+                let hashId = new BN(src.hash.toString('hex'), 'hex').toString(10);
+                let pstate = shardState.accounts.get(hashId);
+                if (pstate) {
+                    lastTx = { hash: pstate.shardAccount.lastTransHash, lt: pstate.shardAccount.lastTransLt.toString(10) };
+                }
             }
         }
 
