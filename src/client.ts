@@ -324,14 +324,18 @@ export class LiteClient {
             let transactions: liteServer_transactionId[] = [];
             let after: liteServer_transactionId3 | null = null;
             while (true) {
-                let tr = await this.listBlockTransactions(blockId.id, { count: 50, mode: 1 + 2 + 4 });
+                let tr = await this.listBlockTransactions(blockId.id, {
+                    count: 128,
+                    mode: 1 + 2 + 4 + (after ? 128 : 0),
+                    after
+                });
                 for (let t of tr.ids) {
                     transactions.push(t);
                 }
                 if (!tr.incomplete) {
                     break;
                 }
-                after = { kind: 'liteServer.transactionId3', account: tr.ids[tr.ids.length - 1].account!, lt: tr.ids[tr.ids.length - 1].lt! };
+                after = { kind: 'liteServer.transactionId3', account: tr.ids[tr.ids.length - 1].account!, lt: tr.ids[tr.ids.length - 1].lt! } as liteServer_transactionId3;
             }
             let mapped = transactions.map((t) => ({ hash: t.hash!, lt: t.lt!, account: t.account! }));
 

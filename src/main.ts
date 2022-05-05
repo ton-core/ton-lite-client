@@ -50,8 +50,10 @@ async function main() {
     // let read = 0;
     start = Date.now();
 
-    let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_members_raw', Buffer.alloc(0), mc.last);
-    console.warn(res);
+    console.warn(await client.getFullBlock(20287288));
+
+    // let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_members_raw', Buffer.alloc(0), mc.last);
+    // console.warn(res);
     // let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
 
     // console.warn(state);
