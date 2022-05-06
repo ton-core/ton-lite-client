@@ -50,7 +50,13 @@ async function main() {
     // let read = 0;
     start = Date.now();
 
-    console.warn(await client.getFullBlock(20287288));
+    // console.warn(await client.getFullBlock(18965834));
+
+    let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
+    console.warn(await client.getAccountState(Address.parse('EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd'), block.id, 5000));
+
+
+    // block/20344104/EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd
 
     // let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_members_raw', Buffer.alloc(0), mc.last);
     // console.warn(res);

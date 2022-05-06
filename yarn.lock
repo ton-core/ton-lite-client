@@ -764,10 +764,10 @@ acorn@^8.2.4, acorn@^8.4.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.7.0.tgz#90951fde0f8f09df93549481e5fc141445b791cf"
   integrity sha512-V/LGr1APy+PXIwKebEWrkZPwoeoF+w1jiOBUmuxuiUIaOHtob8Qc9BTrYo7VuI5fR8tqsy+buA2WFooR5olqvQ==
 
-adnl@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/adnl/-/adnl-0.0.2.tgz#60e93d532685c74b3f8fc35e6316e238d81c43b7"
-  integrity sha512-o4f7VBq9suPHwHPw6c4xOWU8hy4fTDtjccom2oH1DwAjktcdEvKtEcB/GSds/YUYMVUTqVTe7hvt0aJVk3n8mA==
+adnl@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/adnl/-/adnl-0.0.3.tgz#60fe518d936f7c4dbc540046a6dd774146e3dc76"
+  integrity sha512-+uQ0LiXn3NP8LSzK/QJz/i9lUWaP7/tnTJeXXVbKXPorBeN3K0TFDF4uLis2uElpe9+Bv+ufNVw4EbSDDRmtvw==
   dependencies:
     "@tonstack/xed25519" "^0.0.2"
 
@@ -2637,10 +2637,10 @@ ton-tl@^0.2.1:
     crc-32 "^1.2.2"
     pegjs "^0.10.0"
 
-ton@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/ton/-/ton-10.0.0.tgz#49f27d286ded38a82ba4dd8ff682a512cc6f51c3"
-  integrity sha512-DXDmu5AJAn3OZp1Qnm3intdUf4iRb8gpymF4blOfIGLhRmyGlfF0vuZ/otFxwc8ME/3zkuLedlCQZRoD/7SpmQ==
+ton@^10.4.3:
+  version "10.4.3"
+  resolved "https://registry.yarnpkg.com/ton/-/ton-10.4.3.tgz#c32c87c5a9b369f24809c2b7189d0d642cbee552"
+  integrity sha512-xTWJr8G1sMjddA5rhG44UFIkhfxUixNEzcu5gygr7PRPMLY+FN30EWiqpqIpe213fQZg1mmE0tFgyZTXm7XmFA==
   dependencies:
     axios "^0.25.0"
     bn.js "5.2.0"
