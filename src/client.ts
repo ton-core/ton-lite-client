@@ -5,11 +5,9 @@ import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
 import DataLoader from 'dataloader';
-import { createBackoff } from "teslabot";
 import { crc16 } from "./utils/crc16";
 
 const ZERO = new BN(0);
-const backoff = createBackoff({ onError: (e, i) => i > 3 && console.warn(e) });
 
 //
 // Ops
@@ -146,7 +144,6 @@ export class LiteClient {
         let balance: RawCurrencyCollection = { coins: ZERO, extraCurrencies: null };
         let lastTx: { lt: string, hash: Buffer } | null = null;
         if (res.state.length > 0) {
-            console.warn(res.state.toString('base64'));
             account = parseAccount(Cell.fromBoc(res.state)[0].beginParse())!;
             if (account) {
                 balance = account.storage.balance;
@@ -296,12 +293,6 @@ export class LiteClient {
             this.getAllShardsInfo(mcBlockId.id),
             this.getAllShardsInfo(mcBlockPrevId.id)
         ]);
-
-        console.warn(mcBlockId);
-        console.warn(mcBlockPrevId);
-
-        console.warn(mcShards);
-        console.warn(mcShardsPrev);
 
         // Extract shards
         let shards: {
