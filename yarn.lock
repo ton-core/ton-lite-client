@@ -2637,10 +2637,10 @@ ton-tl@^0.2.1:
     crc-32 "^1.2.2"
     pegjs "^0.10.0"
 
-ton@^10.4.3:
-  version "10.4.3"
-  resolved "https://registry.yarnpkg.com/ton/-/ton-10.4.3.tgz#c32c87c5a9b369f24809c2b7189d0d642cbee552"
-  integrity sha512-xTWJr8G1sMjddA5rhG44UFIkhfxUixNEzcu5gygr7PRPMLY+FN30EWiqpqIpe213fQZg1mmE0tFgyZTXm7XmFA==
+ton@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/ton/-/ton-11.0.0.tgz#7b299c4fd11aecabefc4b0f1932a87c2d1991ba9"
+  integrity sha512-C9hSTF8MzrIEfQbfsXFEpjPVhma272B5Bp9tcQmQSeLxkUlhyx+/Bs4DR76te8vWRgkG22mK10k0A6FPtqN2Hg==
   dependencies:
     axios "^0.25.0"
     bn.js "5.2.0"
