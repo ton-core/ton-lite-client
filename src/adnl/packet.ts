@@ -39,35 +39,30 @@ class ADNLPacket {
     }
 
     public static parse (data: Buffer) {
-        // TODO: pipe data
-        const _size = data.slice(0, 4).readUint32LE(0)
-        // console.log('expected', _size, 'got', data.byteLength)
+        if (!ADNLPacket.containsFullPacket(data)) {
+            throw new Error('Bad packet')
+        }
 
+        let cursor = 0
+        const size = data.slice(0, cursor += 4).readUint32LE(0)
 
-        const bytes = Array.from(data.slice(4, _size + 4))
+        const nonce = data.slice(cursor, cursor += 32)
+        const payload = data.slice(cursor, cursor += (size - (32 + 32)))
+        const hash = data.slice(cursor, cursor += 32)
 
-        const hash = Buffer.from(bytes.splice(-32))
-        const nonce = Buffer.from(bytes.splice(0, 32))
-        // console.log('payload:', bytes.length, _size)
-        const payload = Buffer.from(bytes).slice(0, _size - 32 - 32)
-        // console.log('payload total:', payload.byteLength)
         if (!hash.equals(createHash('sha256').update(nonce).update(payload).digest())) {
-            throw new Error('Bad packet hash')
+            throw new Error('ADNLPacket: Bad packet hash.')
         }
 
         return {
             packet: new ADNLPacket(payload, nonce),
-            extra: data.slice(4 + _size, data.byteLength)
+            extra: data.slice(4 + size, data.byteLength)
         }
     }
 
     static containsFullPacket(data: Buffer): boolean {
-        const _size = data.readUint32LE(0)
-
-        if (data.byteLength >= _size) {
-            return true
-        }
-        return false
+        const size = data.readUint32LE(0)
+        return data.byteLength - 4 >= size
     }
 }
 
