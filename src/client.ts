@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { Address, Cell, parseAccount, RawCurrencyCollection, RawStorageInfo, RawAccountStorage } from "ton";
+import { Address, Cell, parseAccount, RawCurrencyCollection, RawStorageInfo, RawAccountStorage, parseDict } from "ton";
 import { parseShardStateUnsplit } from "ton/dist/block/parse";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
@@ -113,6 +113,30 @@ export class LiteClient {
     getVersion = async () => {
         return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, { timeout: 5000 }));
     }
+
+    getConfig = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+        let res = await this.engine.query(Functions.liteServer_getConfigAll, {
+            kind: 'liteServer.getConfigAll',
+            id: {
+                kind: 'tonNode.blockIdExt',
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                fileHash: block.fileHash,
+                rootHash: block.rootHash
+            },
+            mode: 0
+        }, { timeout: 5000 });
+
+        const configProof = Cell.fromBoc(res.configProof)[0];
+        const configCell = configProof.refs[0];
+        const cs = configCell.beginParse();
+        let shardState = parseShardStateUnsplit(cs);
+        if (!shardState.extras) {
+            throw Error('Invalid response');
+        }
+        return shardState.extras;
+    };
 
     //
     // Account

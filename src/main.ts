@@ -52,15 +52,18 @@ async function main() {
 
     // console.warn(await client.getFullBlock(18965834));
 
-    let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
+    // let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
     // console.warn(await client.getAccountState(Address.parse('EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd'), block.id, 5000));
 
-    console.warn(await client.getAccountState(Address.parse('EQChp8oK-nB-Avs1rCL8Q9IieH8oAwnntwIHmYvDzD07wh6V'), block.id, 5000));
+    // console.warn(await client.getAccountState(Address.parse('EQChp8oK-nB-Avs1rCL8Q9IieH8oAwnntwIHmYvDzD07wh6V'), block.id, 5000));
 
 
     // block/20344104/EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd
 
-    // let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_members_raw', Buffer.alloc(0), mc.last);
+    // let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_staking_status', Buffer.alloc(0), mc.last);
+    let res = await client.getConfig(mc.last);
+    console.warn(res);
+    // console.warn(res);
     // console.warn(res);
     // let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
 
