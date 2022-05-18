@@ -52,8 +52,8 @@ async function main() {
 
     // console.warn(await client.getFullBlock(18965834));
 
-    // let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
-    // console.warn(await client.getAccountState(Address.parse('EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd'), block.id, 5000));
+    let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
+    console.warn(await client.getAccountState(Address.parse('Ef8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAU'), block.id, 5000));
 
     // console.warn(await client.getAccountState(Address.parse('EQChp8oK-nB-Avs1rCL8Q9IieH8oAwnntwIHmYvDzD07wh6V'), block.id, 5000));
 
