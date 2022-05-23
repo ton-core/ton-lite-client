@@ -2625,10 +2625,10 @@ ton-crypto@2.1.0:
     ton-crypto-primitives "2.0.0"
     tweetnacl "1.0.3"
 
-ton-tl@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-0.2.1.tgz#8a918b8f38cf531dfcd293dae93a666f5d637f5b"
-  integrity sha512-HUWgpMhjtj2J1qzC1WCSEFNKNeXOqrjzdOVfdvoHX0X7e8w5w0Tr7GKZ40CKX6Wi/lsl6h5JkD/6EJqWB9fl0A==
+ton-tl@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-0.2.2.tgz#4ae195cfec9ddec48281529ba5c89b07bc48dcc5"
+  integrity sha512-7T0QZAyIP3w7xFi2+h3c7VBfBQYem6h8J+bS3F8I04qevT5fa9jMkuh4AzbzGQaH8uCcB2D0zZcH4up19CbtnQ==
   dependencies:
     "@types/bn.js" "^5.1.0"
     "@types/pegjs" "^0.10.3"
