@@ -61,6 +61,9 @@ class ADNLPacket {
     }
 
     static containsFullPacket(data: Buffer): boolean {
+        if (data.byteLength < 4) {
+            return false
+        }
         const size = data.readUint32LE(0)
         return data.byteLength - 4 >= size
     }
