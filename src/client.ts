@@ -97,12 +97,12 @@ export class LiteClient {
     //
     // Sending
     //
-    
+
     sendMessage = async (src: Buffer) => {
-       let res = await this.engine.query(Functions.liteServer_sendMessage, { kind: 'liteServer.sendMessage', body: src }, { timeout: 5000 });
-       return {
-           status: res.status
-       };
+        let res = await this.engine.query(Functions.liteServer_sendMessage, { kind: 'liteServer.sendMessage', body: src }, { timeout: 5000 });
+        return {
+            status: res.status
+        };
     }
 
     //
@@ -216,10 +216,10 @@ export class LiteClient {
         }, { timeout: 5000 });
     }
 
-    getAccountTransactions = async (src: Address, lt: string, hash: Buffer) => {
-        return await this.engine.query(Functions.liteServer_getTransactions, {
+    getAccountTransactions = async (src: Address, lt: string, hash: Buffer, count: number) => {
+        let loaded = await this.engine.query(Functions.liteServer_getTransactions, {
             kind: 'liteServer.getTransactions',
-            count: 1,
+            count,
             account: {
                 kind: 'liteServer.accountId',
                 workchain: src.workChain,
@@ -228,6 +228,10 @@ export class LiteClient {
             lt: lt,
             hash: hash
         }, { timeout: 5000 });
+        return {
+            ids: loaded.ids,
+            transactions: loaded.transactions
+        };
     }
 
     runMethod = async (src: Address, method: string, params: Buffer, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {

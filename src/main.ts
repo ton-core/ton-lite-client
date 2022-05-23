@@ -52,8 +52,12 @@ async function main() {
 
     // console.warn(await client.getFullBlock(18965834));
 
-    let block = await client.lookupBlockByID({ seqno: 20344104, shard: '-9223372036854775808', workchain: -1 });
-    console.warn(await client.getAccountState(Address.parse('Ef8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAU'), block.id, 5000));
+    let block = await client.lookupBlockByID({ seqno: 20764301, shard: '-9223372036854775808', workchain: -1 });
+    let state = await client.getAccountState(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), block.id, 5000);
+    console.warn(state);
+
+    let transactions = await client.getAccountTransactions(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), state.lastTx!.lt, state.lastTx!.hash, 10);
+    console.warn(transactions);
 
     // console.warn(await client.getAccountState(Address.parse('EQChp8oK-nB-Avs1rCL8Q9IieH8oAwnntwIHmYvDzD07wh6V'), block.id, 5000));
 
@@ -61,8 +65,8 @@ async function main() {
     // block/20344104/EQBy2de1hfWDDM-q5EVVIc4tHDmLXh-5fgWVvcm0Us2B2iMd
 
     // let res = await client.runMethod(Address.parse('EQCkR1cGmnsE45N4K0otPl5EnxnRakmGqeJUNua5fkWhales'), 'get_staking_status', Buffer.alloc(0), mc.last);
-    let res = await client.getConfig(mc.last);
-    console.warn(res);
+    // let res = await client.getConfig(mc.last);
+    // console.warn(res);
     // console.warn(res);
     // console.warn(res);
     // let state = await client.getAccountState(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), mc.last);
@@ -110,9 +114,7 @@ async function main() {
     // // let lastest = await client.getAccountTransaction(Address.parse('EQCOcxb5n3-RrDkGbK_3DymwGjeVZbi65I3FmmBwrggDFN_z'), state.state!.storage.lastTransLt.toString(10), block.id);
     // // console.warn(lastest);
 
-    // let transactions = await client.getAccountTransactions(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7'), state.lastTx!.lt, state.lastTx!.hash);
     // let txs = Cell.fromBoc(transactions.transactions).map((v) => parseTransaction(0, v.beginParse()));
-    // console.warn(txs);
     // // console.warn(Address.parse('EQBtVNI7-RxvJUXV8hARC5n8xgjEbcJLQdg6Hb9_brcbtTV7').hash.toString('hex'));
 
     // let lastmc = mc.last.seqno;
