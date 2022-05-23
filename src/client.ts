@@ -95,6 +95,17 @@ export class LiteClient {
     }
 
     //
+    // Sending
+    //
+    
+    sendMessage = async (src: Buffer) => {
+       let res = await this.engine.query(Functions.liteServer_sendMessage, { kind: 'liteServer.sendMessage', body: src }, { timeout: 5000 });
+       return {
+           status: res.status
+       };
+    }
+
+    //
     // State
     //
 
