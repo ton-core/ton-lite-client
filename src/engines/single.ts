@@ -139,10 +139,16 @@ export class LiteSingleEngine implements LiteEngine {
                 if (answer.answer.readInt32LE(0) === -1146494648) {
                     q.reject(new Error(Codecs.liteServer_Error.decode(new TLReadBuffer(answer.answer)).message));
                 } else {
-                    let decoded = q.f.decodeResponse(new TLReadBuffer(answer.answer));
+                    try {
+                        let decoded = q.f.decodeResponse(new TLReadBuffer(answer.answer));
 
-                    // Resolve
-                    q.resolver(decoded);
+                        // Resolve
+                        q.resolver(decoded);
+                    } catch (e) {
+                        
+                        // Reject
+                        q.reject(e);
+                    }
                 }
             }
         }
