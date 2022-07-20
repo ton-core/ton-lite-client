@@ -28,13 +28,13 @@ const lookupBlockByID = async (engine: LiteEngine, props: { seqno: number, shard
     }, { timeout: 5000 });
 }
 
-const lookupBlockByUtime = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, utime: number }) => {
+const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, workchain: number, utime: number }) => {
     return await engine.query(Functions.liteServer_lookupBlock, {
         kind: 'liteServer.lookupBlock',
         mode: 4,
         id: {
             kind: 'tonNode.blockId',
-            seqno: props.seqno,
+            seqno: 0,
             shard: props.shard,
             workchain: props.workchain
         },
@@ -87,7 +87,7 @@ const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard:
 }
 
 type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
-type BlockLookupUtimeRequest = { seqno: number, shard: string, workchain: number, mode: 'utime', utime: number }
+type BlockLookupUtimeRequest = { shard: string, workchain: number, mode: 'utime', utime: number }
 
 
 export class LiteClient {
@@ -107,7 +107,13 @@ export class LiteClient {
                 }
                 return lookupBlockByID(this.engine, v);
             }));
-        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => {
+            if (s.mode === 'id') {
+                return s.workchain + '::' + s.shard + '::' + s.seqno;
+            } else {
+                return s.workchain + '::' + s.shard + '::utime-' + s.utime;
+            }
+        }});
 
         this.#blockHeader = new DataLoader(async (s) => {
             return await Promise.all(s.map((v) => getBlockHeader(this.engine, v)));
@@ -306,7 +312,7 @@ export class LiteClient {
         return await this.#blockLockup.load({ ...block, mode: 'id' });
     }
 
-    lookupBlockByUtime = async (block: { seqno: number, shard: string, workchain: number, utime: number }) => {
+    lookupBlockByUtime = async (block: { shard: string, workchain: number, utime: number }) => {
         return await this.#blockLockup.load({ ...block, mode: 'utime' });
     }
 
