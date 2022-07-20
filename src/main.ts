@@ -18,11 +18,11 @@ function intToIP(int: number) {
 }
 
 let server = {
-    "ip": -1468558020,
-    "port": 20640,
+    "ip": 1091931625,
+    "port": 30131,
     "id": {
-        "@type": "pub.ed25519",
-        "key": "D/ezwjebrDbjs2rpaY3pYrewsI4qcu65HNNq/fim13U="
+      "@type": "pub.ed25519",
+      "key": "wrQaeIFispPfHndEBc0s0fx7GSp8UFFvebnytQQfc6A="
     }
 }
 
@@ -50,14 +50,15 @@ async function main() {
     // let read = 0;
     start = Date.now();
 
-    // console.warn(await client.getFullBlock(18965834));
+    // console.warn(await client.getFullBlock(22204204));
 
-    let block = await client.lookupBlockByID({ seqno: 20764301, shard: '-9223372036854775808', workchain: -1 });
-    let state = await client.getAccountState(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), block.id, 5000);
-    console.warn(state);
+    let block = await client.lookupBlockByUtime({ shard: mc.last.shard, workchain: -1, utime: 1658322220 });
+    console.warn(block);
+    // let state = await client.getAccountState(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), block.id, 5000);
+    // console.warn(state);
 
-    let transactions = await client.getAccountTransactions(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), state.lastTx!.lt, state.lastTx!.hash, 10);
-    console.warn(transactions);
+    // let transactions = await client.getAccountTransactions(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), state.lastTx!.lt, state.lastTx!.hash, 10);
+    // console.warn(transactions);
 
     // console.warn(await client.getAccountState(Address.parse('EQChp8oK-nB-Avs1rCL8Q9IieH8oAwnntwIHmYvDzD07wh6V'), block.id, 5000));
 
