@@ -52,7 +52,7 @@ async function main() {
 
     // console.warn(await client.getFullBlock(22204204));
 
-    let block = await client.lookupBlockByUtime({ seqno: mc.last.seqno, shard: mc.last.shard, workchain: -1, utime: 1658322220 });
+    let block = await client.lookupBlockByUtime({ shard: mc.last.shard, workchain: -1, utime: 1658322220 });
     console.warn(block);
     // let state = await client.getAccountState(Address.parse('EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'), block.id, 5000);
     // console.warn(state);
