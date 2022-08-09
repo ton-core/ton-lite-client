@@ -30,8 +30,7 @@ async function main() {
     const engines: LiteEngine[] = [];
     for (let i = 0; i < 50; i++) {
         engines.push(new LiteSingleEngine({
-            host: intToIP(server.ip),
-            port: server.port,
+            host: `tcp://${intToIP(server.ip)}:${server.port}`,
             publicKey: Buffer.from(server.id.key, 'base64')
         }));
     }

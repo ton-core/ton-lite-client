@@ -1,6 +1,6 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from "tweetnacl";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
-import { ADNLClient } from "../adnl";
+import { ADNLClient } from "adnl";
 import { Codecs, Functions } from "../schema";
 import { LiteEngine } from "./engine";
 
@@ -15,22 +15,28 @@ type QueryReference = {
 export class LiteSingleEngine implements LiteEngine {
 
     readonly host: string
-    readonly port: number;
     readonly publicKey: Buffer;
     #currentClient: ADNLClient | null = null;
     #ready = false;
-    #closed = false;
+    #closed = true;
     #queries: Map<string, QueryReference> = new Map();
 
-    constructor(args: { host: string, port: number, publicKey: Buffer }) {
+    constructor(args: { host: string, publicKey: Buffer }) {
         this.host = args.host;
-        this.port = args.port;
         this.publicKey = args.publicKey;
         this.connect();
     }
 
+    isClosed() {
+        return this.#closed
+    }
+
     async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
-        let id = randomBytes(32);
+        if (this.#closed) {
+            throw new Error('Engine is closed');
+        }
+
+        let id = Buffer.from(randomBytes(32));
 
         // Request
         let writer = new TLWriteBuffer();
@@ -86,9 +92,9 @@ export class LiteSingleEngine implements LiteEngine {
         // Configure new client
         const client = new ADNLClient(
             this.host,
-            this.port,
             this.publicKey
         );
+        client.connect()
         client.on('connect', () => {
             if (this.#currentClient === client) {
                 this.onConencted();
@@ -109,13 +115,21 @@ export class LiteSingleEngine implements LiteEngine {
                 this.onReady();
             }
         });
+        client.on('error', (err) => {
+            this.close()
+
+            setTimeout(() => {
+                this.#closed = false
+                this.connect();
+            }, 30000)
+        })
 
         // Persist client
         this.#currentClient = client;
     }
 
     private onConencted = () => {
-
+        this.#closed = false
     }
 
     private onReady = () => {
