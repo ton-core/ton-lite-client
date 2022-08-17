@@ -1,4 +1,3 @@
-import { delay } from "teslabot";
 import { TLFunction } from "ton-tl";
 import { LiteEngine } from "./engine";
 
@@ -39,8 +38,8 @@ export class LiteRoundRobinEngine implements LiteEngine {
                 const res = await this.engines[id].query(f, req, args);
                 return res
             } catch (e) {
+                id = (id + 1) % this.engines.length
                 if (e instanceof Error && e.message === 'Timeout') {
-                    id = (id + 1) % this.engines.length
                     continue
                 }
                 errorsCount++
@@ -64,4 +63,10 @@ export class LiteRoundRobinEngine implements LiteEngine {
     isClosed() {
         return this.#closed
     }
+}
+
+function delay(ms: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+        setTimeout(resolve, ms)
+    })
 }

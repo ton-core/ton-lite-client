@@ -3,7 +3,7 @@ import { LiteSingleEngine } from "./engines/single";
 import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
 import { Address, Cell } from "ton";
-import { formatDistance } from "date-fns";
+// import { formatDistance } from "date-fns";
 import { createBackoff } from "teslabot";
 import { inspect } from "util";
 const backoff = createBackoff();
