@@ -359,6 +359,12 @@ export interface liteServer_getAccountState {
     readonly account: liteServer_accountId;
 }
 
+export interface liteServer_getAccountStatePrunned {
+    readonly kind: 'liteServer.getAccountStatePrunned';
+    readonly id: tonNode_blockIdExt;
+    readonly account: liteServer_accountId;
+}
+
 export interface liteServer_runSmcMethod {
     readonly kind: 'liteServer.runSmcMethod';
     readonly mode: TLFlag;
@@ -504,6 +510,11 @@ export const Functions = {
         encodeRequest: (src: liteServer_getAccountState, encoder: TLWriteBuffer) => { encoder.writeInt32(1804144165); Codecs.liteServer_getAccountState.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_AccountState.decode(decoder)
     } as TLFunction<liteServer_getAccountState, liteServer_AccountState>,
+
+    liteServer_getAccountStatePrunned: {
+        encodeRequest: (src: liteServer_getAccountStatePrunned, encoder: TLWriteBuffer) => { encoder.writeInt32(1516864775); Codecs.liteServer_getAccountStatePrunned.encode(src, encoder); },
+        decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_AccountState.decode(decoder)
+    } as TLFunction<liteServer_getAccountStatePrunned, liteServer_AccountState>,
 
     liteServer_runSmcMethod: {
         encodeRequest: (src: liteServer_runSmcMethod, encoder: TLWriteBuffer) => { encoder.writeInt32(1556504018); Codecs.liteServer_runSmcMethod.encode(src, encoder); },
@@ -1154,6 +1165,18 @@ export const Codecs = {
             return { kind: 'liteServer.getAccountState', id, account };
         },
     } as TLCodec<liteServer_getAccountState>,
+
+    liteServer_getAccountStatePrunned: {
+        encode: (src: liteServer_getAccountStatePrunned, encoder: TLWriteBuffer) => {
+            Codecs.tonNode_blockIdExt.encode(src.id, encoder);
+            Codecs.liteServer_accountId.encode(src.account, encoder);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_getAccountStatePrunned => {
+            let id = Codecs.tonNode_blockIdExt.decode(decoder);
+            let account = Codecs.liteServer_accountId.decode(decoder);
+            return { kind: 'liteServer.getAccountStatePrunned', id, account };
+        },
+    } as TLCodec<liteServer_getAccountStatePrunned>,
 
     liteServer_runSmcMethod: {
         encode: (src: liteServer_runSmcMethod, encoder: TLWriteBuffer) => {

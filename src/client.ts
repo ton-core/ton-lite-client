@@ -233,6 +233,43 @@ export class LiteClient {
         }
     }
 
+    getAccountStatePrunned = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, timeout: number = 5000) => {
+        let res = (await this.engine.query(Functions.liteServer_getAccountStatePrunned, {
+            kind: 'liteServer.getAccountStatePrunned',
+            id: {
+                kind: 'tonNode.blockIdExt',
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                fileHash: block.fileHash,
+                rootHash: block.rootHash
+            },
+            account: {
+                kind: 'liteServer.accountId',
+                workchain: src.workChain,
+                id: src.hash
+            }
+        }, { timeout }));
+
+        let stateHash: Buffer | null = null;
+        if (res.state.length > 0) {
+            let stateCell = Cell.fromBoc(res.state)[0];
+            if (!stateCell.isExotic) {
+                throw new Error('Prunned state is not exotic');
+            }
+            stateHash = Cell.fromBoc(res.state)[0].bits.buffer.slice(0, 32);
+        }
+
+        return {
+            stateHash,
+            raw: res.state,
+            proof: res.proof,
+            block: res.id,
+            shardBlock: res.shardblk,
+            shardProof: res.shardProof
+        }
+    }
+
     getAccountTransaction = async (src: Address, lt: string, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
         return await this.engine.query(Functions.liteServer_getOneTransaction, {
             kind: 'liteServer.getOneTransaction',
