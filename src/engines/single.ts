@@ -1,6 +1,6 @@
 import { randomBytes } from "tweetnacl";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
-import { ADNLClient } from "adnl";
+import { ADNLClient, ADNLClientTCP, ADNLClientWS } from "adnl";
 import { Codecs, Functions } from "../schema";
 import { LiteEngine } from "./engine";
 
@@ -20,10 +20,12 @@ export class LiteSingleEngine implements LiteEngine {
     #ready = false;
     #closed = true;
     #queries: Map<string, QueryReference> = new Map();
+    #clientType: 'tcp' | 'ws'
 
-    constructor(args: { host: string, publicKey: Buffer }) {
+    constructor(args: { host: string, publicKey: Buffer, client?: 'tcp' | 'ws' }) {
         this.host = args.host;
         this.publicKey = args.publicKey;
+        this.#clientType = args.client || 'tcp'
         this.connect();
     }
 
@@ -88,9 +90,11 @@ export class LiteSingleEngine implements LiteEngine {
     }
 
     private connect() {
-
         // Configure new client
-        const client = new ADNLClient(
+        const client = this.#clientType === 'ws' ? new ADNLClientWS(
+            this.host,
+            this.publicKey
+        ) : new ADNLClientTCP(
             this.host,
             this.publicKey
         );
