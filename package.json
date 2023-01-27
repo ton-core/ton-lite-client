@@ -1,6 +1,6 @@
 {
   "name": "ton-lite-client",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.2",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -21,7 +21,7 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
-    "adnl": "^0.0.12",
+    "adnl": "^0.0.13",
     "dataloader": "^2.1.0",
     "teslabot": "^1.5.0",
     "ton-tl": "^0.2.2",
