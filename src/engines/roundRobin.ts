@@ -28,6 +28,12 @@ export class LiteRoundRobinEngine extends EventEmitter implements LiteEngine {
                 this.readyEngines = this.readyEngines.filter(e => e !== engine)
             })
         }
+
+        for (const engine of engines) {
+            if (engine.isReady()) {
+                this.readyEngines.push(engine)
+            }
+        }
     }
 
     async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
