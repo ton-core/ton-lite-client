@@ -1,6 +1,6 @@
 {
   "name": "ton-lite-client",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0-beta.7",
   "main": "dist/index.js",
   "files": [
     "dist"

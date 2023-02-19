@@ -4,7 +4,7 @@ import { LiteEngine } from "./engine";
 
 export class LiteRoundRobinEngine extends EventEmitter implements LiteEngine {
 
-    readonly allEngines: LiteEngine[];
+    private allEngines: LiteEngine[] = [];
     private readyEngines: LiteEngine[] = [];
     
     #closed = false;
@@ -13,26 +13,33 @@ export class LiteRoundRobinEngine extends EventEmitter implements LiteEngine {
     constructor(engines: LiteEngine[]) {
         super()
 
-        this.allEngines = engines;
-
         for (const engine of engines) {
-            engine.on('ready', () => {
-                this.readyEngines.push(engine)
-            })
+            this.addSingleEngine(engine)
+        }
+    }
 
-            engine.on('close', () => {
-                this.readyEngines = this.readyEngines.filter(e => e !== engine)
-            })
-
-            engine.on('error', () => {
-                this.readyEngines = this.readyEngines.filter(e => e !== engine)
-            })
+    addSingleEngine(engine: LiteEngine) {
+        const existing = this.allEngines.find(e => e === engine)
+        if (existing) {
+            throw new Error('Engine already exists')
         }
 
-        for (const engine of engines) {
-            if (engine.isReady()) {
-                this.readyEngines.push(engine)
-            }
+        this.allEngines.push(engine)
+
+        engine.on('ready', () => {
+            this.readyEngines.push(engine)
+        })
+
+        engine.on('close', () => {
+            this.readyEngines = this.readyEngines.filter(e => e !== engine)
+        })
+
+        engine.on('error', () => {
+            this.readyEngines = this.readyEngines.filter(e => e !== engine)
+        })
+
+        if (engine.isReady()) {
+            this.readyEngines.push(engine)
         }
     }
 
