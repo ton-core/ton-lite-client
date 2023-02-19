@@ -32,9 +32,12 @@ export function parseShards(cs: Slice) {
 
             // Also check math
             // let delta = shard.and(shard.notn(64).addn(1)).shrn(1);
-            let delta = shard & (~shard + 1n) >> 1n;
+            let delta = (shard & (~shard + 1n)) >> 1n;
+            if (!delta || (slice.remainingRefs !== 2 || slice.remainingBits > 0)) {
+                continue
+            }
             stack.push({ slice: slice.loadRef().asSlice(), shard: shard - delta });
-            stack.push({ slice: slice.loadRef().asSlice(), shard: shard - delta });
+            stack.push({ slice: slice.loadRef().asSlice(), shard: shard + delta });
         }
         return res;
     });
