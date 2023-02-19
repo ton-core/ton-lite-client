@@ -2538,10 +2538,10 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-ton-core@^0.41.0:
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/ton-core/-/ton-core-0.41.0.tgz#c325dcc39342e6a51a92c08f4343fc71a51b2437"
-  integrity sha512-tfwCyY62EE4kZOP4+wEA86U4E88y94SiosoRYghYL81DPWBmQK5H7OBZVILUqGF1S/HdcLXZMptWMllIOX7CRg==
+ton-core@^0.47.1:
+  version "0.47.1"
+  resolved "https://registry.yarnpkg.com/ton-core/-/ton-core-0.47.1.tgz#22298d79e345ea1a34825b4044dda5a7c5995474"
+  integrity sha512-XxcgLYH+Ngo3uh7O7jkzA0/O8nfG3WC3fgUmdvY9/IkGKpkO3Y/KHtrZgAOHYAkxJCmaXpi4aPf4JEnZEiPrWQ==
   dependencies:
     symbol.inspect "1.0.1"
 

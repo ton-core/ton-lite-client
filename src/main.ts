@@ -28,14 +28,18 @@ let server = {
 async function main() {
 
     const engines: LiteEngine[] = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 1; i++) {
         engines.push(new LiteSingleEngine({
             host: `tcp://${intToIP(server.ip)}:${server.port}`,
-            publicKey: Buffer.from(server.id.key, 'base64')
+            // host: `wss://ws.tonlens.com/?ip=${server.ip}&port=${server.port}&pubkey=${server.id.key}`,
+            publicKey: Buffer.from(server.id.key, 'base64'),
+            // client: 'ws'
         }));
     }
     const engine: LiteEngine = new LiteRoundRobinEngine(engines);
     const client = new LiteClient({ engine });
+    const master = await client.getMasterchainInfo()
+    console.log('master', master)
 
     const address = Address.parse('kQC2sf_Hy34aMM7n9f9_V-ThHDehjH71LWBETy_JrTirPIHa');
 

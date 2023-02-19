@@ -1,10 +1,11 @@
-import { Address, Cell, loadAccount, CurrencyCollection, Account } from "ton-core";
+import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract } from "ton-core";
 import { loadShardStateUnsplit } from 'ton-core'
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
 import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
+import { createLiteClientProvider } from "./liteClientProvider";
 
 const ZERO = 0n;
 
@@ -106,13 +107,15 @@ export class LiteClient {
                 }
                 return lookupBlockByID(this.engine, v);
             }));
-        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => {
-            if (s.mode === 'id') {
-                return s.workchain + '::' + s.shard + '::' + s.seqno;
-            } else {
-                return s.workchain + '::' + s.shard + '::utime-' + s.utime;
+        }, {
+            maxBatchSize: batchSize, cacheKeyFn: (s) => {
+                if (s.mode === 'id') {
+                    return s.workchain + '::' + s.shard + '::' + s.seqno;
+                } else {
+                    return s.workchain + '::' + s.shard + '::utime-' + s.utime;
+                }
             }
-        }});
+        });
 
         this.#blockHeader = new DataLoader(async (s) => {
             return await Promise.all(s.map((v) => getBlockHeader(this.engine, v)));
@@ -121,6 +124,13 @@ export class LiteClient {
         this.#shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
             return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
         }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+    }
+
+
+    open<T extends Contract>(contract: T) {
+        return openContract<T>(contract, (args) =>
+            createLiteClientProvider(this, null, args.address, args.init)
+        )
     }
 
     //
@@ -210,7 +220,7 @@ export class LiteClient {
                 if (account) {
                     balance = account.storage.balance;
                     let shardState = loadShardStateUnsplit(Cell.fromBoc(res.proof)[1].refs[0].beginParse());
-                    let hashId = BigInt('0x' + src.hash.toString('hex'))                
+                    let hashId = BigInt('0x' + src.hash.toString('hex'))
                     if (shardState.accounts) {
                         let pstate = shardState.accounts.get(hashId);
                         if (pstate) {
