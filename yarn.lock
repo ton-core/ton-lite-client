@@ -536,6 +536,11 @@
   resolved "https://registry.yarnpkg.com/@noble/ed25519/-/ed25519-1.7.1.tgz#6899660f6fbb97798a6fbd227227c4589a454724"
   integrity sha512-Rk4SkJFaXZiznFyC/t77Q0NKS4FL7TLJJsVG2V2oiEq3kJVeTdxysEe/yRWSpnWMe808XRDJ+VFh5pt/FN5plw==
 
+"@noble/hashes@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.2.0.tgz#a3150eeb09cc7ab207ebf6d7b9ad311a9bdbed12"
+  integrity sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.6"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.6.tgz#80c516a4dc264c2a69115e7578d62581ff455ed9"
@@ -711,18 +716,17 @@ acorn@^8.2.4, acorn@^8.4.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.8.1.tgz#0a3f9cbecc4ec3bea6f0a80b66ae8dd2da250b73"
   integrity sha512-7zFpHzhnqYKrkYdUjF1HI1bzd0VygEGX8lFk4k5zVMqHEoES+P+7TKI+EvLO9WVMJ8eekdO0aDEK044xTXwPPA==
 
-adnl@^0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/adnl/-/adnl-0.0.13.tgz#4e2386d7d6ae65fec3352e17b005415865270045"
-  integrity sha512-PEq3yrrsEfVO2PuvueyD77aV9JWUy2l74jKOL6HPMbFeE5ofUPXaKhKIBle4MVsL+XSQIb8n1sA2DQRikQaLJg==
+adnl@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/adnl/-/adnl-1.0.3.tgz#1fb328b70c2fdce2617667efa9ef750bc5561d6a"
+  integrity sha512-P+jGWhWTp0f4EskKie5rUA+EnQINzq0qvu1N3UkNSjynIOWCzl0wOPGUo3IAJ2r9/MI9DnebRYO0e4wyX7qbBw==
   dependencies:
     "@noble/ed25519" "^1.6.1"
+    "@noble/hashes" "^1.2.0"
     aes-js "^3.1.2"
     buffer "^6.0.3"
-    crypto-js "^4.1.1"
     events "^3.3.0"
     isomorphic-ws "^5.0.0"
-    tweetnacl "^1.0.3"
     ws "^8.8.1"
 
 aes-js@^3.1.2:
@@ -1054,11 +1058,6 @@ cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
-
-crypto-js@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
-  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
 
 cssom@^0.4.4:
   version "0.4.4"
@@ -2561,10 +2560,10 @@ ton-crypto@^3.2.0:
     ton-crypto-primitives "2.0.0"
     tweetnacl "1.0.3"
 
-ton-tl@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-0.2.2.tgz#4ae195cfec9ddec48281529ba5c89b07bc48dcc5"
-  integrity sha512-7T0QZAyIP3w7xFi2+h3c7VBfBQYem6h8J+bS3F8I04qevT5fa9jMkuh4AzbzGQaH8uCcB2D0zZcH4up19CbtnQ==
+ton-tl@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ton-tl/-/ton-tl-1.0.0.tgz#cd08b031436f54fd551c09c582371daf9d4dd6ca"
+  integrity sha512-bzhp1wFIDZ4plwAu2tG5KIh+kpXV0pvkcqv66f9H1ofIvYMElZ3Uy0b44P8iNg6DoHWpESbIiMPiGSAUmLhAvg==
   dependencies:
     "@types/bn.js" "^5.1.0"
     "@types/pegjs" "^0.10.3"

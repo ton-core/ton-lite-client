@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { generate } from 'ton-tl';
+import { generate } from 'ton-tl/dist/gen';
 
 let source = fs.readFileSync(__dirname + '/schema.tl', 'utf-8');
 let generated = generate(source);
