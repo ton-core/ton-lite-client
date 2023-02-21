@@ -21,13 +21,15 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
     #closed = true;
     #queries: Map<string, QueryReference> = new Map();
     #clientType: 'tcp' | 'ws'
+    #reconnectTimeout: number
 
-    constructor(args: { host: string, publicKey: Buffer, client?: 'tcp' | 'ws' }) {
+    constructor(args: { host: string, publicKey: Buffer, client?: 'tcp' | 'ws', reconnectTimeout?: number }) {
         super()
 
         this.host = args.host;
         this.publicKey = args.publicKey;
         this.#clientType = args.client || 'tcp'
+        this.#reconnectTimeout = args.reconnectTimeout || 10000
         this.connect();
     }
 
@@ -189,6 +191,6 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
             if (!this.#closed) {
                 this.connect();
             }
-        }, 10000);
+        }, this.#reconnectTimeout);
     }
 }
