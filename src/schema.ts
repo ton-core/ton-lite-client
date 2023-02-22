@@ -509,132 +509,131 @@ export interface liteServer_waitMasterchainSeqno {
 export const Functions = {
     liteServer_getMasterchainInfo: {
         encodeRequest: (src: liteServer_getMasterchainInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(-1984567762); Codecs.liteServer_getMasterchainInfo.encode(src, encoder); },
-        // encodeRequest: (src: liteServer_getMasterchainInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(-1084834176); Codecs.liteServer_getMasterchainInfo.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_MasterchainInfo.decode(decoder)
     } as TLFunction<liteServer_getMasterchainInfo, liteServer_MasterchainInfo>,
 
     liteServer_getMasterchainInfoExt: {
-        encodeRequest: (src: liteServer_getMasterchainInfoExt, encoder: TLWriteBuffer) => { encoder.writeInt32(1964339101); Codecs.liteServer_getMasterchainInfoExt.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getMasterchainInfoExt, encoder: TLWriteBuffer) => { encoder.writeInt32(1889956319); Codecs.liteServer_getMasterchainInfoExt.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_MasterchainInfoExt.decode(decoder)
     } as TLFunction<liteServer_getMasterchainInfoExt, liteServer_MasterchainInfoExt>,
 
     liteServer_getTime: {
-        encodeRequest: (src: liteServer_getTime, encoder: TLWriteBuffer) => { encoder.writeInt32(1118527302); Codecs.liteServer_getTime.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getTime, encoder: TLWriteBuffer) => { encoder.writeInt32(380459572); Codecs.liteServer_getTime.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_CurrentTime.decode(decoder)
     } as TLFunction<liteServer_getTime, liteServer_CurrentTime>,
 
     liteServer_getVersion: {
-        encodeRequest: (src: liteServer_getVersion, encoder: TLWriteBuffer) => { encoder.writeInt32(-185011019); Codecs.liteServer_getVersion.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getVersion, encoder: TLWriteBuffer) => { encoder.writeInt32(590058507); Codecs.liteServer_getVersion.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_Version.decode(decoder)
     } as TLFunction<liteServer_getVersion, liteServer_Version>,
 
     liteServer_getBlock: {
-        encodeRequest: (src: liteServer_getBlock, encoder: TLWriteBuffer) => { encoder.writeInt32(500895195); Codecs.liteServer_getBlock.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getBlock, encoder: TLWriteBuffer) => { encoder.writeInt32(1668796173); Codecs.liteServer_getBlock.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_BlockData.decode(decoder)
     } as TLFunction<liteServer_getBlock, liteServer_BlockData>,
 
     liteServer_getState: {
-        encodeRequest: (src: liteServer_getState, encoder: TLWriteBuffer) => { encoder.writeInt32(1102151230); Codecs.liteServer_getState.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getState, encoder: TLWriteBuffer) => { encoder.writeInt32(-1167184202); Codecs.liteServer_getState.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_BlockState.decode(decoder)
     } as TLFunction<liteServer_getState, liteServer_BlockState>,
 
     liteServer_getBlockHeader: {
-        encodeRequest: (src: liteServer_getBlockHeader, encoder: TLWriteBuffer) => { encoder.writeInt32(1956599020); Codecs.liteServer_getBlockHeader.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getBlockHeader, encoder: TLWriteBuffer) => { encoder.writeInt32(569116318); Codecs.liteServer_getBlockHeader.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_BlockHeader.decode(decoder)
     } as TLFunction<liteServer_getBlockHeader, liteServer_BlockHeader>,
 
     liteServer_sendMessage: {
-        encodeRequest: (src: liteServer_sendMessage, encoder: TLWriteBuffer) => { encoder.writeInt32(1624698481); Codecs.liteServer_sendMessage.encode(src, encoder); },
+        encodeRequest: (src: liteServer_sendMessage, encoder: TLWriteBuffer) => { encoder.writeInt32(1762317442); Codecs.liteServer_sendMessage.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_SendMsgStatus.decode(decoder)
     } as TLFunction<liteServer_sendMessage, liteServer_SendMsgStatus>,
 
     liteServer_getAccountState: {
-        encodeRequest: (src: liteServer_getAccountState, encoder: TLWriteBuffer) => { encoder.writeInt32(677796832); Codecs.liteServer_getAccountState.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getAccountState, encoder: TLWriteBuffer) => { encoder.writeInt32(1804144165); Codecs.liteServer_getAccountState.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_AccountState.decode(decoder)
     } as TLFunction<liteServer_getAccountState, liteServer_AccountState>,
 
     liteServer_getAccountStatePrunned: {
-        encodeRequest: (src: liteServer_getAccountStatePrunned, encoder: TLWriteBuffer) => { encoder.writeInt32(-46663025); Codecs.liteServer_getAccountStatePrunned.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getAccountStatePrunned, encoder: TLWriteBuffer) => { encoder.writeInt32(1516864775); Codecs.liteServer_getAccountStatePrunned.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_AccountState.decode(decoder)
     } as TLFunction<liteServer_getAccountStatePrunned, liteServer_AccountState>,
 
     liteServer_runSmcMethod: {
-        encodeRequest: (src: liteServer_runSmcMethod, encoder: TLWriteBuffer) => { encoder.writeInt32(193491724); Codecs.liteServer_runSmcMethod.encode(src, encoder); },
+        encodeRequest: (src: liteServer_runSmcMethod, encoder: TLWriteBuffer) => { encoder.writeInt32(1556504018); Codecs.liteServer_runSmcMethod.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_RunMethodResult.decode(decoder)
     } as TLFunction<liteServer_runSmcMethod, liteServer_RunMethodResult>,
 
     liteServer_getShardInfo: {
-        encodeRequest: (src: liteServer_getShardInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(676032538); Codecs.liteServer_getShardInfo.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getShardInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(1185084453); Codecs.liteServer_getShardInfo.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ShardInfo.decode(decoder)
     } as TLFunction<liteServer_getShardInfo, liteServer_ShardInfo>,
 
     liteServer_getAllShardsInfo: {
-        encodeRequest: (src: liteServer_getAllShardsInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(-1189253756); Codecs.liteServer_getAllShardsInfo.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getAllShardsInfo, encoder: TLWriteBuffer) => { encoder.writeInt32(1960050027); Codecs.liteServer_getAllShardsInfo.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_AllShardsInfo.decode(decoder)
     } as TLFunction<liteServer_getAllShardsInfo, liteServer_AllShardsInfo>,
 
     liteServer_getOneTransaction: {
-        encodeRequest: (src: liteServer_getOneTransaction, encoder: TLWriteBuffer) => { encoder.writeInt32(587334379); Codecs.liteServer_getOneTransaction.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getOneTransaction, encoder: TLWriteBuffer) => { encoder.writeInt32(-737205014); Codecs.liteServer_getOneTransaction.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_TransactionInfo.decode(decoder)
     } as TLFunction<liteServer_getOneTransaction, liteServer_TransactionInfo>,
 
     liteServer_getTransactions: {
-        encodeRequest: (src: liteServer_getTransactions, encoder: TLWriteBuffer) => { encoder.writeInt32(-1027287760); Codecs.liteServer_getTransactions.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getTransactions, encoder: TLWriteBuffer) => { encoder.writeInt32(474015649); Codecs.liteServer_getTransactions.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_TransactionList.decode(decoder)
     } as TLFunction<liteServer_getTransactions, liteServer_TransactionList>,
 
     liteServer_lookupBlock: {
-        encodeRequest: (src: liteServer_lookupBlock, encoder: TLWriteBuffer) => { encoder.writeInt32(-1711475907); Codecs.liteServer_lookupBlock.encode(src, encoder); },
+        encodeRequest: (src: liteServer_lookupBlock, encoder: TLWriteBuffer) => { encoder.writeInt32(-87492834); Codecs.liteServer_lookupBlock.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_BlockHeader.decode(decoder)
     } as TLFunction<liteServer_lookupBlock, liteServer_BlockHeader>,
 
     liteServer_listBlockTransactions: {
-        encodeRequest: (src: liteServer_listBlockTransactions, encoder: TLWriteBuffer) => { encoder.writeInt32(94552484); Codecs.liteServer_listBlockTransactions.encode(src, encoder); },
+        encodeRequest: (src: liteServer_listBlockTransactions, encoder: TLWriteBuffer) => { encoder.writeInt32(-1375942694); Codecs.liteServer_listBlockTransactions.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_BlockTransactions.decode(decoder)
     } as TLFunction<liteServer_listBlockTransactions, liteServer_BlockTransactions>,
 
     liteServer_getBlockProof: {
-        encodeRequest: (src: liteServer_getBlockProof, encoder: TLWriteBuffer) => { encoder.writeInt32(305293756); Codecs.liteServer_getBlockProof.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getBlockProof, encoder: TLWriteBuffer) => { encoder.writeInt32(-1964336060); Codecs.liteServer_getBlockProof.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_PartialBlockProof.decode(decoder)
     } as TLFunction<liteServer_getBlockProof, liteServer_PartialBlockProof>,
 
     liteServer_getConfigAll: {
-        encodeRequest: (src: liteServer_getConfigAll, encoder: TLWriteBuffer) => { encoder.writeInt32(916274080); Codecs.liteServer_getConfigAll.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getConfigAll, encoder: TLWriteBuffer) => { encoder.writeInt32(-1860491593); Codecs.liteServer_getConfigAll.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ConfigInfo.decode(decoder)
     } as TLFunction<liteServer_getConfigAll, liteServer_ConfigInfo>,
 
     liteServer_getConfigParams: {
-        encodeRequest: (src: liteServer_getConfigParams, encoder: TLWriteBuffer) => { encoder.writeInt32(122208117); Codecs.liteServer_getConfigParams.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getConfigParams, encoder: TLWriteBuffer) => { encoder.writeInt32(705764377); Codecs.liteServer_getConfigParams.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ConfigInfo.decode(decoder)
     } as TLFunction<liteServer_getConfigParams, liteServer_ConfigInfo>,
 
     liteServer_getValidatorStats: {
-        encodeRequest: (src: liteServer_getValidatorStats, encoder: TLWriteBuffer) => { encoder.writeInt32(-365098881); Codecs.liteServer_getValidatorStats.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getValidatorStats, encoder: TLWriteBuffer) => { encoder.writeInt32(-416991591); Codecs.liteServer_getValidatorStats.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ValidatorStats.decode(decoder)
     } as TLFunction<liteServer_getValidatorStats, liteServer_ValidatorStats>,
 
     liteServer_getLibraries: {
-        encodeRequest: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => { encoder.writeInt32(-1067178901); Codecs.liteServer_getLibraries.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => { encoder.writeInt32(-786254238); Codecs.liteServer_getLibraries.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_LibraryResult.decode(decoder)
     } as TLFunction<liteServer_getLibraries, liteServer_LibraryResult>,
 
     liteServer_getShardBlockProof: {
-        encodeRequest: (src: liteServer_getShardBlockProof, encoder: TLWriteBuffer) => { encoder.writeInt32(137294174); Codecs.liteServer_getShardBlockProof.encode(src, encoder); },
+        encodeRequest: (src: liteServer_getShardBlockProof, encoder: TLWriteBuffer) => { encoder.writeInt32(1285948240); Codecs.liteServer_getShardBlockProof.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ShardBlockProof.decode(decoder)
     } as TLFunction<liteServer_getShardBlockProof, liteServer_ShardBlockProof>,
 
     liteServer_queryPrefix: {
-        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1656084316); Codecs.liteServer_queryPrefix.encode(src, encoder); },
+        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1738601306); Codecs.liteServer_queryPrefix.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_queryPrefix, TLBytes>,
 
     liteServer_query: {
-        encodeRequest: (src: liteServer_query, encoder: TLWriteBuffer) => { encoder.writeInt32(1964787178); Codecs.liteServer_query.encode(src, encoder); },
+        encodeRequest: (src: liteServer_query, encoder: TLWriteBuffer) => { encoder.writeInt32(2039219935); Codecs.liteServer_query.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_query, TLBytes>,
 
     liteServer_waitMasterchainSeqno: {
-        encodeRequest: (src: liteServer_waitMasterchainSeqno, encoder: TLWriteBuffer) => { encoder.writeInt32(2108825209); Codecs.liteServer_waitMasterchainSeqno.encode(src, encoder); },
+        encodeRequest: (src: liteServer_waitMasterchainSeqno, encoder: TLWriteBuffer) => { encoder.writeInt32(-1159022446); Codecs.liteServer_waitMasterchainSeqno.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_waitMasterchainSeqno, TLBytes>,
 
@@ -1444,7 +1443,6 @@ export const Codecs = {
         },
     } as TLCodec<liteServer_getValidatorStats>,
 
-
     liteServer_getLibraries: {
         encode: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => {
             encoder.writeVector((buffer, writer) => {
@@ -1504,7 +1502,7 @@ export const Codecs = {
         encode: (src: tonNode_BlockId, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'tonNode.blockId') {
-                encoder.writeInt32(-1335345181);
+                encoder.writeInt32(-1211256473);
                 Codecs.tonNode_blockId.encode(src, encoder);
                 return;
             }
@@ -1512,7 +1510,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): tonNode_BlockId => {
             const kind = decoder.readInt32();
-            if (kind === -1335345181) {
+            if (kind === -1211256473) {
                 return Codecs.tonNode_blockId.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1523,7 +1521,7 @@ export const Codecs = {
         encode: (src: tonNode_BlockIdExt, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'tonNode.blockIdExt') {
-                encoder.writeInt32(1034988876);
+                encoder.writeInt32(1733487480);
                 Codecs.tonNode_blockIdExt.encode(src, encoder);
                 return;
             }
@@ -1531,7 +1529,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): tonNode_BlockIdExt => {
             const kind = decoder.readInt32();
-            if (kind === 1034988876) {
+            if (kind === 1733487480) {
                 return Codecs.tonNode_blockIdExt.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1542,7 +1540,7 @@ export const Codecs = {
         encode: (src: tonNode_ZeroStateIdExt, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'tonNode.zeroStateIdExt') {
-                encoder.writeInt32(1383791219);
+                encoder.writeInt32(494024110);
                 Codecs.tonNode_zeroStateIdExt.encode(src, encoder);
                 return;
             }
@@ -1550,7 +1548,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): tonNode_ZeroStateIdExt => {
             const kind = decoder.readInt32();
-            if (kind === 1383791219) {
+            if (kind === 494024110) {
                 return Codecs.tonNode_zeroStateIdExt.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1561,12 +1559,12 @@ export const Codecs = {
         encode: (src: adnl_Message, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'adnl.message.query') {
-                encoder.writeInt32(-747825806);
+                encoder.writeInt32(-1265895046);
                 Codecs.adnl_message_query.encode(src, encoder);
                 return;
             }
             if (kind === 'adnl.message.answer') {
-                encoder.writeInt32(-1747837060);
+                encoder.writeInt32(262964246);
                 Codecs.adnl_message_answer.encode(src, encoder);
                 return;
             }
@@ -1574,10 +1572,10 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): adnl_Message => {
             const kind = decoder.readInt32();
-            if (kind === -747825806) {
+            if (kind === -1265895046) {
                 return Codecs.adnl_message_query.decode(decoder);
             }
-            if (kind === -1747837060) {
+            if (kind === 262964246) {
                 return Codecs.adnl_message_answer.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1588,7 +1586,7 @@ export const Codecs = {
         encode: (src: liteServer_Error, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.error') {
-                encoder.writeInt32(-1448578747);
+                encoder.writeInt32(464873194);
                 Codecs.liteServer_error.encode(src, encoder);
                 return;
             }
@@ -1596,7 +1594,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_Error => {
             const kind = decoder.readInt32();
-            if (kind === -1448578747) {
+            if (kind === 464873194) {
                 return Codecs.liteServer_error.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1607,7 +1605,7 @@ export const Codecs = {
         encode: (src: liteServer_AccountId, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.accountId') {
-                encoder.writeInt32(-2005757836);
+                encoder.writeInt32(1973478085);
                 Codecs.liteServer_accountId.encode(src, encoder);
                 return;
             }
@@ -1615,7 +1613,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_AccountId => {
             const kind = decoder.readInt32();
-            if (kind === -2005757836) {
+            if (kind === 1973478085) {
                 return Codecs.liteServer_accountId.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1626,7 +1624,7 @@ export const Codecs = {
         encode: (src: liteServer_LibraryEntry, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.libraryEntry') {
-                encoder.writeInt32(-63169240);
+                encoder.writeInt32(-1962990522);
                 Codecs.liteServer_libraryEntry.encode(src, encoder);
                 return;
             }
@@ -1634,7 +1632,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_LibraryEntry => {
             const kind = decoder.readInt32();
-            if (kind === -63169240) {
+            if (kind === -1962990522) {
                 return Codecs.liteServer_libraryEntry.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1645,7 +1643,7 @@ export const Codecs = {
         encode: (src: liteServer_MasterchainInfo, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.masterchainInfo') {
-                encoder.writeInt32(-114084297);
+                encoder.writeInt32(-2055001983);
                 Codecs.liteServer_masterchainInfo.encode(src, encoder);
                 return;
             }
@@ -1653,7 +1651,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_MasterchainInfo => {
             const kind = decoder.readInt32();
-            if (kind === -114084297) {
+            if (kind === -2055001983) {
                 return Codecs.liteServer_masterchainInfo.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1664,7 +1662,7 @@ export const Codecs = {
         encode: (src: liteServer_MasterchainInfoExt, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.masterchainInfoExt') {
-                encoder.writeInt32(-1367946022);
+                encoder.writeInt32(-1462968075);
                 Codecs.liteServer_masterchainInfoExt.encode(src, encoder);
                 return;
             }
@@ -1672,7 +1670,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_MasterchainInfoExt => {
             const kind = decoder.readInt32();
-            if (kind === -1367946022) {
+            if (kind === -1462968075) {
                 return Codecs.liteServer_masterchainInfoExt.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1683,7 +1681,7 @@ export const Codecs = {
         encode: (src: liteServer_CurrentTime, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.currentTime') {
-                encoder.writeInt32(491858196);
+                encoder.writeInt32(-380436467);
                 Codecs.liteServer_currentTime.encode(src, encoder);
                 return;
             }
@@ -1691,7 +1689,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_CurrentTime => {
             const kind = decoder.readInt32();
-            if (kind === 491858196) {
+            if (kind === -380436467) {
                 return Codecs.liteServer_currentTime.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1702,7 +1700,7 @@ export const Codecs = {
         encode: (src: liteServer_Version, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.version') {
-                encoder.writeInt32(-1288497969);
+                encoder.writeInt32(1510248933);
                 Codecs.liteServer_version.encode(src, encoder);
                 return;
             }
@@ -1710,7 +1708,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_Version => {
             const kind = decoder.readInt32();
-            if (kind === -1288497969) {
+            if (kind === 1510248933) {
                 return Codecs.liteServer_version.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1721,7 +1719,7 @@ export const Codecs = {
         encode: (src: liteServer_BlockData, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockData') {
-                encoder.writeInt32(665345847);
+                encoder.writeInt32(-1519063700);
                 Codecs.liteServer_blockData.encode(src, encoder);
                 return;
             }
@@ -1729,7 +1727,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockData => {
             const kind = decoder.readInt32();
-            if (kind === 665345847) {
+            if (kind === -1519063700) {
                 return Codecs.liteServer_blockData.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1740,7 +1738,7 @@ export const Codecs = {
         encode: (src: liteServer_BlockState, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockState') {
-                encoder.writeInt32(1779754846);
+                encoder.writeInt32(-1414669300);
                 Codecs.liteServer_blockState.encode(src, encoder);
                 return;
             }
@@ -1748,7 +1746,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockState => {
             const kind = decoder.readInt32();
-            if (kind === 1779754846) {
+            if (kind === -1414669300) {
                 return Codecs.liteServer_blockState.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1759,7 +1757,7 @@ export const Codecs = {
         encode: (src: liteServer_BlockHeader, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockHeader') {
-                encoder.writeInt32(118981611);
+                encoder.writeInt32(1965916697);
                 Codecs.liteServer_blockHeader.encode(src, encoder);
                 return;
             }
@@ -1767,7 +1765,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockHeader => {
             const kind = decoder.readInt32();
-            if (kind === 118981611) {
+            if (kind === 1965916697) {
                 return Codecs.liteServer_blockHeader.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1778,7 +1776,7 @@ export const Codecs = {
         encode: (src: liteServer_SendMsgStatus, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.sendMsgStatus') {
-                encoder.writeInt32(224088235);
+                encoder.writeInt32(961602967);
                 Codecs.liteServer_sendMsgStatus.encode(src, encoder);
                 return;
             }
@@ -1786,7 +1784,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_SendMsgStatus => {
             const kind = decoder.readInt32();
-            if (kind === 224088235) {
+            if (kind === 961602967) {
                 return Codecs.liteServer_sendMsgStatus.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1797,7 +1795,7 @@ export const Codecs = {
         encode: (src: liteServer_AccountState, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.accountState') {
-                encoder.writeInt32(2132090380);
+                encoder.writeInt32(1887029073);
                 Codecs.liteServer_accountState.encode(src, encoder);
                 return;
             }
@@ -1805,7 +1803,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_AccountState => {
             const kind = decoder.readInt32();
-            if (kind === 2132090380) {
+            if (kind === 1887029073) {
                 return Codecs.liteServer_accountState.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1816,7 +1814,7 @@ export const Codecs = {
         encode: (src: liteServer_RunMethodResult, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.runMethodResult') {
-                encoder.writeInt32(-1177934824);
+                encoder.writeInt32(-1550163605);
                 Codecs.liteServer_runMethodResult.encode(src, encoder);
                 return;
             }
@@ -1824,7 +1822,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_RunMethodResult => {
             const kind = decoder.readInt32();
-            if (kind === -1177934824) {
+            if (kind === -1550163605) {
                 return Codecs.liteServer_runMethodResult.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1835,7 +1833,7 @@ export const Codecs = {
         encode: (src: liteServer_ShardInfo, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.shardInfo') {
-                encoder.writeInt32(-1992054947);
+                encoder.writeInt32(-1612264060);
                 Codecs.liteServer_shardInfo.encode(src, encoder);
                 return;
             }
@@ -1843,7 +1841,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_ShardInfo => {
             const kind = decoder.readInt32();
-            if (kind === -1992054947) {
+            if (kind === -1612264060) {
                 return Codecs.liteServer_shardInfo.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1854,7 +1852,7 @@ export const Codecs = {
         encode: (src: liteServer_AllShardsInfo, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.allShardsInfo') {
-                encoder.writeInt32(652203323);
+                encoder.writeInt32(160425773);
                 Codecs.liteServer_allShardsInfo.encode(src, encoder);
                 return;
             }
@@ -1862,7 +1860,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_AllShardsInfo => {
             const kind = decoder.readInt32();
-            if (kind === 652203323) {
+            if (kind === 160425773) {
                 return Codecs.liteServer_allShardsInfo.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1873,7 +1871,7 @@ export const Codecs = {
         encode: (src: liteServer_TransactionInfo, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.transactionInfo') {
-                encoder.writeInt32(-1950413705);
+                encoder.writeInt32(249490759);
                 Codecs.liteServer_transactionInfo.encode(src, encoder);
                 return;
             }
@@ -1881,7 +1879,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_TransactionInfo => {
             const kind = decoder.readInt32();
-            if (kind === -1950413705) {
+            if (kind === 249490759) {
                 return Codecs.liteServer_transactionInfo.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1892,7 +1890,7 @@ export const Codecs = {
         encode: (src: liteServer_TransactionList, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.transactionList') {
-                encoder.writeInt32(-189466137);
+                encoder.writeInt32(1864812043);
                 Codecs.liteServer_transactionList.encode(src, encoder);
                 return;
             }
@@ -1900,7 +1898,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_TransactionList => {
             const kind = decoder.readInt32();
-            if (kind === -189466137) {
+            if (kind === 1864812043) {
                 return Codecs.liteServer_transactionList.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1911,7 +1909,7 @@ export const Codecs = {
         encode: (src: liteServer_TransactionId, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.transactionId') {
-                encoder.writeInt32(634492853);
+                encoder.writeInt32(-1322293841);
                 Codecs.liteServer_transactionId.encode(src, encoder);
                 return;
             }
@@ -1919,7 +1917,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_TransactionId => {
             const kind = decoder.readInt32();
-            if (kind === 634492853) {
+            if (kind === -1322293841) {
                 return Codecs.liteServer_transactionId.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1930,7 +1928,7 @@ export const Codecs = {
         encode: (src: liteServer_TransactionId3, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.transactionId3') {
-                encoder.writeInt32(-1388026900);
+                encoder.writeInt32(746707575);
                 Codecs.liteServer_transactionId3.encode(src, encoder);
                 return;
             }
@@ -1938,7 +1936,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_TransactionId3 => {
             const kind = decoder.readInt32();
-            if (kind === -1388026900) {
+            if (kind === 746707575) {
                 return Codecs.liteServer_transactionId3.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1949,7 +1947,7 @@ export const Codecs = {
         encode: (src: liteServer_BlockTransactions, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockTransactions') {
-                encoder.writeInt32(-821529788);
+                encoder.writeInt32(-1114854101);
                 Codecs.liteServer_blockTransactions.encode(src, encoder);
                 return;
             }
@@ -1957,7 +1955,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockTransactions => {
             const kind = decoder.readInt32();
-            if (kind === -821529788) {
+            if (kind === -1114854101) {
                 return Codecs.liteServer_blockTransactions.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1968,7 +1966,7 @@ export const Codecs = {
         encode: (src: liteServer_Signature, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.signature') {
-                encoder.writeInt32(2024504618);
+                encoder.writeInt32(-1545668523);
                 Codecs.liteServer_signature.encode(src, encoder);
                 return;
             }
@@ -1976,7 +1974,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_Signature => {
             const kind = decoder.readInt32();
-            if (kind === 2024504618) {
+            if (kind === -1545668523) {
                 return Codecs.liteServer_signature.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1987,7 +1985,7 @@ export const Codecs = {
         encode: (src: liteServer_SignatureSet, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.signatureSet') {
-                encoder.writeInt32(714474818);
+                encoder.writeInt32(-163272986);
                 Codecs.liteServer_signatureSet.encode(src, encoder);
                 return;
             }
@@ -1995,7 +1993,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_SignatureSet => {
             const kind = decoder.readInt32();
-            if (kind === 714474818) {
+            if (kind === -163272986) {
                 return Codecs.liteServer_signatureSet.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2006,12 +2004,12 @@ export const Codecs = {
         encode: (src: liteServer_BlockLink, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.blockLinkBack') {
-                encoder.writeInt32(1397983067);
+                encoder.writeInt32(-276947985);
                 Codecs.liteServer_blockLinkBack.encode(src, encoder);
                 return;
             }
             if (kind === 'liteServer.blockLinkForward') {
-                encoder.writeInt32(2002408744);
+                encoder.writeInt32(1376767516);
                 Codecs.liteServer_blockLinkForward.encode(src, encoder);
                 return;
             }
@@ -2019,10 +2017,10 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_BlockLink => {
             const kind = decoder.readInt32();
-            if (kind === 1397983067) {
+            if (kind === -276947985) {
                 return Codecs.liteServer_blockLinkBack.decode(decoder);
             }
-            if (kind === 2002408744) {
+            if (kind === 1376767516) {
                 return Codecs.liteServer_blockLinkForward.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2033,7 +2031,7 @@ export const Codecs = {
         encode: (src: liteServer_PartialBlockProof, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.partialBlockProof') {
-                encoder.writeInt32(-1880873891);
+                encoder.writeInt32(-1898917183);
                 Codecs.liteServer_partialBlockProof.encode(src, encoder);
                 return;
             }
@@ -2041,7 +2039,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_PartialBlockProof => {
             const kind = decoder.readInt32();
-            if (kind === -1880873891) {
+            if (kind === -1898917183) {
                 return Codecs.liteServer_partialBlockProof.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2052,7 +2050,7 @@ export const Codecs = {
         encode: (src: liteServer_ConfigInfo, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.configInfo') {
-                encoder.writeInt32(-931774249);
+                encoder.writeInt32(-1367660753);
                 Codecs.liteServer_configInfo.encode(src, encoder);
                 return;
             }
@@ -2060,7 +2058,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_ConfigInfo => {
             const kind = decoder.readInt32();
-            if (kind === -931774249) {
+            if (kind === -1367660753) {
                 return Codecs.liteServer_configInfo.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2071,7 +2069,7 @@ export const Codecs = {
         encode: (src: liteServer_ValidatorStats, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.validatorStats') {
-                encoder.writeInt32(-340218919);
+                encoder.writeInt32(-1174956328);
                 Codecs.liteServer_validatorStats.encode(src, encoder);
                 return;
             }
@@ -2079,7 +2077,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_ValidatorStats => {
             const kind = decoder.readInt32();
-            if (kind === -340218919) {
+            if (kind === -1174956328) {
                 return Codecs.liteServer_validatorStats.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2090,7 +2088,7 @@ export const Codecs = {
         encode: (src: liteServer_LibraryResult, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.libraryResult') {
-                encoder.writeInt32(-1183267648);
+                encoder.writeInt32(293255531);
                 Codecs.liteServer_libraryResult.encode(src, encoder);
                 return;
             }
@@ -2098,7 +2096,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_LibraryResult => {
             const kind = decoder.readInt32();
-            if (kind === -1183267648) {
+            if (kind === 293255531) {
                 return Codecs.liteServer_libraryResult.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2109,7 +2107,7 @@ export const Codecs = {
         encode: (src: liteServer_ShardBlockLink, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.shardBlockLink') {
-                encoder.writeInt32(-573498506);
+                encoder.writeInt32(-754069646);
                 Codecs.liteServer_shardBlockLink.encode(src, encoder);
                 return;
             }
@@ -2117,7 +2115,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_ShardBlockLink => {
             const kind = decoder.readInt32();
-            if (kind === -573498506) {
+            if (kind === -754069646) {
                 return Codecs.liteServer_shardBlockLink.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2128,7 +2126,7 @@ export const Codecs = {
         encode: (src: liteServer_ShardBlockProof, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.shardBlockProof') {
-                encoder.writeInt32(-742065109);
+                encoder.writeInt32(493002874);
                 Codecs.liteServer_shardBlockProof.encode(src, encoder);
                 return;
             }
@@ -2136,7 +2134,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_ShardBlockProof => {
             const kind = decoder.readInt32();
-            if (kind === -742065109) {
+            if (kind === 493002874) {
                 return Codecs.liteServer_shardBlockProof.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -2147,7 +2145,7 @@ export const Codecs = {
         encode: (src: liteServer_debug_Verbosity, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.debug.verbosity') {
-                encoder.writeInt32(-595318792);
+                encoder.writeInt32(1564493619);
                 Codecs.liteServer_debug_verbosity.encode(src, encoder);
                 return;
             }
@@ -2155,7 +2153,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_debug_Verbosity => {
             const kind = decoder.readInt32();
-            if (kind === -595318792) {
+            if (kind === 1564493619) {
                 return Codecs.liteServer_debug_verbosity.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
