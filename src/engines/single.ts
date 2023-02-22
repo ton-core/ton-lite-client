@@ -98,6 +98,7 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
     }
 
     private connect() {
+        console.log('start connect')
         // Configure new client
         const client = this.#clientType === 'ws' ? new ADNLClientWS(
             this.host,
@@ -108,18 +109,21 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
         );
         client.connect()
         client.on('connect', () => {
+            console.log('connect ok')
             if (this.#currentClient === client) {
                 this.onConencted();
                 this.emit('connect')
             }
         })
         client.on('close', () => {
+            console.log('close')
             if (this.#currentClient === client) {
                 this.onClosed();
                 this.emit('close')
             }
         });
         client.on('data', (data) => {
+            console.log('data', data)
             if (this.#currentClient === client) {
                 this.onData(data);
             }
@@ -131,6 +135,7 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
             }
         });
         client.on('error', (err) => {
+            console.log('error', err)
             this.close()
             this.emit('error')
 

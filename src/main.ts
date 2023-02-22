@@ -17,12 +17,23 @@ function intToIP(int: number) {
     return part4 + "." + part3 + "." + part2 + "." + part1;
 }
 
+// mainnet
+// let server = {
+//     "ip": 1097649206,
+//     "port": 29296,
+//     "id": {
+//         "@type": "pub.ed25519",
+//         "key": "p2tSiaeSqX978BxE5zLxuTQM06WVDErf5/15QToxMYA="
+//     }
+// }
+
+// testnet
 let server = {
-    "ip": 1097649206,
-    "port": 29296,
+    "ip": -2018162320,
+    "port": 49760,
     "id": {
         "@type": "pub.ed25519",
-        "key": "p2tSiaeSqX978BxE5zLxuTQM06WVDErf5/15QToxMYA="
+        "key": "I++/fRgw5+002UqThnF3tN2FkQChlDyfFQolVsuNSOE="
     }
 }
 async function main() {
@@ -38,6 +49,7 @@ async function main() {
     }
     const engine: LiteEngine = new LiteRoundRobinEngine(engines);
     const client = new LiteClient({ engine });
+    console.log('get master info')
     const master = await client.getMasterchainInfo()
     console.log('master', master)
 
