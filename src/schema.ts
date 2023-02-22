@@ -1,3 +1,11 @@
+/**
+ * Copyright (c) Whales Corp. 
+ * All Rights Reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { TLWriteBuffer, TLReadBuffer, TLFlag, TLInt, TLString, TLLong, TLInt256, TLInt128, TLBytes, TLBool, TLCodec, TLFunction } from "ton-tl";
 
 //
