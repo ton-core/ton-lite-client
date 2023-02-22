@@ -479,4 +479,11 @@ export class LiteClient {
             shards: shards2
         };
     }
+
+    getLibraries = async (hashes: Buffer[]) => {
+        return this.engine.query(Functions.liteServer_getLibraries, {
+            kind: 'liteServer.getLibraries',
+            libraryList: hashes
+        }, { timeout: 5000 })
+    }
 }

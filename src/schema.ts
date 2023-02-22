@@ -59,6 +59,12 @@ export interface liteServer_accountId {
     readonly id: TLInt256;
 }
 
+export interface liteServer_libraryEntry {
+    readonly kind: 'liteServer.libraryEntry';
+    readonly hash: TLInt256;
+    readonly data: TLBytes;
+}
+
 export interface liteServer_masterchainInfo {
     readonly kind: 'liteServer.masterchainInfo';
     readonly last: tonNode_blockIdExt;
@@ -250,6 +256,23 @@ export interface liteServer_validatorStats {
     readonly dataProof: TLBytes;
 }
 
+export interface liteServer_libraryResult {
+    readonly kind: 'liteServer.libraryResult';
+    readonly result: liteServer_libraryEntry[];
+}
+
+export interface liteServer_shardBlockLink {
+    readonly kind: 'liteServer.shardBlockLink';
+    readonly id: tonNode_blockIdExt;
+    readonly proof: TLBytes;
+}
+
+export interface liteServer_shardBlockProof {
+    readonly kind: 'liteServer.shardBlockProof';
+    readonly masterchainId: tonNode_blockIdExt;
+    readonly links: liteServer_shardBlockLink[];
+}
+
 export interface liteServer_debug_verbosity {
     readonly kind: 'liteServer.debug.verbosity';
     readonly value: TLInt;
@@ -270,6 +293,8 @@ export type adnl_Message = adnl_message_query | adnl_message_answer;
 export type liteServer_Error = liteServer_error;
 
 export type liteServer_AccountId = liteServer_accountId;
+
+export type liteServer_LibraryEntry = liteServer_libraryEntry;
 
 export type liteServer_MasterchainInfo = liteServer_masterchainInfo;
 
@@ -316,6 +341,12 @@ export type liteServer_PartialBlockProof = liteServer_partialBlockProof;
 export type liteServer_ConfigInfo = liteServer_configInfo;
 
 export type liteServer_ValidatorStats = liteServer_validatorStats;
+
+export type liteServer_LibraryResult = liteServer_libraryResult;
+
+export type liteServer_ShardBlockLink = liteServer_shardBlockLink;
+
+export type liteServer_ShardBlockProof = liteServer_shardBlockProof;
 
 export type liteServer_debug_Verbosity = liteServer_debug_verbosity;
 
@@ -457,6 +488,16 @@ export interface liteServer_getValidatorStats {
     readonly modifiedAfter: TLInt | null;
 }
 
+export interface liteServer_getLibraries {
+    readonly kind: 'liteServer.getLibraries';
+    readonly libraryList: TLInt256[];
+}
+
+export interface liteServer_getShardBlockProof {
+    readonly kind: 'liteServer.getShardBlockProof';
+    readonly id: tonNode_blockIdExt;
+}
+
 export interface liteServer_queryPrefix {
     readonly kind: 'liteServer.queryPrefix';
 }
@@ -579,8 +620,18 @@ export const Functions = {
         decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ValidatorStats.decode(decoder)
     } as TLFunction<liteServer_getValidatorStats, liteServer_ValidatorStats>,
 
+    liteServer_getLibraries: {
+        encodeRequest: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => { encoder.writeInt32(-786254238); Codecs.liteServer_getLibraries.encode(src, encoder); },
+        decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_LibraryResult.decode(decoder)
+    } as TLFunction<liteServer_getLibraries, liteServer_LibraryResult>,
+
+    liteServer_getShardBlockProof: {
+        encodeRequest: (src: liteServer_getShardBlockProof, encoder: TLWriteBuffer) => { encoder.writeInt32(1285948240); Codecs.liteServer_getShardBlockProof.encode(src, encoder); },
+        decodeResponse: (decoder: TLReadBuffer) => Codecs.liteServer_ShardBlockProof.decode(decoder)
+    } as TLFunction<liteServer_getShardBlockProof, liteServer_ShardBlockProof>,
+
     liteServer_queryPrefix: {
-        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1926489734); Codecs.liteServer_queryPrefix.encode(src, encoder); },
+        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1738601306); Codecs.liteServer_queryPrefix.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_queryPrefix, TLBytes>,
 
@@ -590,7 +641,7 @@ export const Functions = {
     } as TLFunction<liteServer_query, TLBytes>,
 
     liteServer_waitMasterchainSeqno: {
-        encodeRequest: (src: liteServer_waitMasterchainSeqno, encoder: TLWriteBuffer) => { encoder.writeInt32(810842304); Codecs.liteServer_waitMasterchainSeqno.encode(src, encoder); },
+        encodeRequest: (src: liteServer_waitMasterchainSeqno, encoder: TLWriteBuffer) => { encoder.writeInt32(-1159022446); Codecs.liteServer_waitMasterchainSeqno.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_waitMasterchainSeqno, TLBytes>,
 
@@ -693,6 +744,18 @@ export const Codecs = {
             return { kind: 'liteServer.accountId', workchain, id };
         },
     } as TLCodec<liteServer_accountId>,
+
+    liteServer_libraryEntry: {
+        encode: (src: liteServer_libraryEntry, encoder: TLWriteBuffer) => {
+            encoder.writeInt256(src.hash);
+            encoder.writeBuffer(src.data);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_libraryEntry => {
+            let hash = decoder.readInt256();
+            let data = decoder.readBuffer();
+            return { kind: 'liteServer.libraryEntry', hash, data };
+        },
+    } as TLCodec<liteServer_libraryEntry>,
 
     liteServer_masterchainInfo: {
         encode: (src: liteServer_masterchainInfo, encoder: TLWriteBuffer) => {
@@ -1076,6 +1139,40 @@ export const Codecs = {
         },
     } as TLCodec<liteServer_validatorStats>,
 
+    liteServer_libraryResult: {
+        encode: (src: liteServer_libraryResult, encoder: TLWriteBuffer) => {
+            encoder.writeVector(Codecs.liteServer_libraryEntry.encode, src.result);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_libraryResult => {
+            let result = decoder.readVector(Codecs.liteServer_libraryEntry.decode);
+            return { kind: 'liteServer.libraryResult', result };
+        },
+    } as TLCodec<liteServer_libraryResult>,
+
+    liteServer_shardBlockLink: {
+        encode: (src: liteServer_shardBlockLink, encoder: TLWriteBuffer) => {
+            Codecs.tonNode_blockIdExt.encode(src.id, encoder);
+            encoder.writeBuffer(src.proof);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_shardBlockLink => {
+            let id = Codecs.tonNode_blockIdExt.decode(decoder);
+            let proof = decoder.readBuffer();
+            return { kind: 'liteServer.shardBlockLink', id, proof };
+        },
+    } as TLCodec<liteServer_shardBlockLink>,
+
+    liteServer_shardBlockProof: {
+        encode: (src: liteServer_shardBlockProof, encoder: TLWriteBuffer) => {
+            Codecs.tonNode_blockIdExt.encode(src.masterchainId, encoder);
+            encoder.writeVector(Codecs.liteServer_shardBlockLink.encode, src.links);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_shardBlockProof => {
+            let masterchainId = Codecs.tonNode_blockIdExt.decode(decoder);
+            let links = decoder.readVector(Codecs.liteServer_shardBlockLink.decode);
+            return { kind: 'liteServer.shardBlockProof', masterchainId, links };
+        },
+    } as TLCodec<liteServer_shardBlockProof>,
+
     liteServer_debug_verbosity: {
         encode: (src: liteServer_debug_verbosity, encoder: TLWriteBuffer) => {
             encoder.writeInt32(src.value);
@@ -1354,6 +1451,31 @@ export const Codecs = {
         },
     } as TLCodec<liteServer_getValidatorStats>,
 
+    liteServer_getLibraries: {
+        encode: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => {
+            encoder.writeVector((buffer, writer) => {
+                writer.writeInt256(buffer)
+            }, src.libraryList);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_getLibraries => {
+            let libraryList = decoder.readVector((src) => {
+                return src.readInt256()
+            })
+            //Codecs.TLInt256.decode);
+            return { kind: 'liteServer.getLibraries', libraryList };
+        },
+    } as TLCodec<liteServer_getLibraries>,
+
+    liteServer_getShardBlockProof: {
+        encode: (src: liteServer_getShardBlockProof, encoder: TLWriteBuffer) => {
+            Codecs.tonNode_blockIdExt.encode(src.id, encoder);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_getShardBlockProof => {
+            let id = Codecs.tonNode_blockIdExt.decode(decoder);
+            return { kind: 'liteServer.getShardBlockProof', id };
+        },
+    } as TLCodec<liteServer_getShardBlockProof>,
+
     liteServer_queryPrefix: {
         encode: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => {
         },
@@ -1472,7 +1594,7 @@ export const Codecs = {
         encode: (src: liteServer_Error, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.error') {
-                encoder.writeInt32(-1146494648);
+                encoder.writeInt32(464873194);
                 Codecs.liteServer_error.encode(src, encoder);
                 return;
             }
@@ -1480,7 +1602,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_Error => {
             const kind = decoder.readInt32();
-            if (kind === -1146494648) {
+            if (kind === 464873194) {
                 return Codecs.liteServer_error.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
@@ -1505,6 +1627,25 @@ export const Codecs = {
             throw Error('Unknown type: ' + kind);
         },
     } as TLCodec<liteServer_AccountId>,
+
+    liteServer_LibraryEntry: {
+        encode: (src: liteServer_LibraryEntry, encoder: TLWriteBuffer) => {
+            const kind = src.kind;
+            if (kind === 'liteServer.libraryEntry') {
+                encoder.writeInt32(-1962990522);
+                Codecs.liteServer_libraryEntry.encode(src, encoder);
+                return;
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_LibraryEntry => {
+            const kind = decoder.readInt32();
+            if (kind === -1962990522) {
+                return Codecs.liteServer_libraryEntry.decode(decoder);
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+    } as TLCodec<liteServer_LibraryEntry>,
 
     liteServer_MasterchainInfo: {
         encode: (src: liteServer_MasterchainInfo, encoder: TLWriteBuffer) => {
@@ -1950,6 +2091,63 @@ export const Codecs = {
             throw Error('Unknown type: ' + kind);
         },
     } as TLCodec<liteServer_ValidatorStats>,
+
+    liteServer_LibraryResult: {
+        encode: (src: liteServer_LibraryResult, encoder: TLWriteBuffer) => {
+            const kind = src.kind;
+            if (kind === 'liteServer.libraryResult') {
+                encoder.writeInt32(293255531);
+                Codecs.liteServer_libraryResult.encode(src, encoder);
+                return;
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_LibraryResult => {
+            const kind = decoder.readInt32();
+            if (kind === 293255531) {
+                return Codecs.liteServer_libraryResult.decode(decoder);
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+    } as TLCodec<liteServer_LibraryResult>,
+
+    liteServer_ShardBlockLink: {
+        encode: (src: liteServer_ShardBlockLink, encoder: TLWriteBuffer) => {
+            const kind = src.kind;
+            if (kind === 'liteServer.shardBlockLink') {
+                encoder.writeInt32(-754069646);
+                Codecs.liteServer_shardBlockLink.encode(src, encoder);
+                return;
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_ShardBlockLink => {
+            const kind = decoder.readInt32();
+            if (kind === -754069646) {
+                return Codecs.liteServer_shardBlockLink.decode(decoder);
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+    } as TLCodec<liteServer_ShardBlockLink>,
+
+    liteServer_ShardBlockProof: {
+        encode: (src: liteServer_ShardBlockProof, encoder: TLWriteBuffer) => {
+            const kind = src.kind;
+            if (kind === 'liteServer.shardBlockProof') {
+                encoder.writeInt32(493002874);
+                Codecs.liteServer_shardBlockProof.encode(src, encoder);
+                return;
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+        decode: (decoder: TLReadBuffer): liteServer_ShardBlockProof => {
+            const kind = decoder.readInt32();
+            if (kind === 493002874) {
+                return Codecs.liteServer_shardBlockProof.decode(decoder);
+            }
+            throw Error('Unknown type: ' + kind);
+        },
+    } as TLCodec<liteServer_ShardBlockProof>,
 
     liteServer_debug_Verbosity: {
         encode: (src: liteServer_debug_Verbosity, encoder: TLWriteBuffer) => {
