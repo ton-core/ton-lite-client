@@ -4,7 +4,7 @@ import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
 import { Address, Cell } from "ton-core";
 // import { formatDistance } from "date-fns";
-import { createBackoff } from "teslabot"; 
+import { createBackoff } from "teslabot";
 import { inspect } from "util";
 const backoff = createBackoff();
 
@@ -17,25 +17,15 @@ function intToIP(int: number) {
     return part4 + "." + part3 + "." + part2 + "." + part1;
 }
 
-// mainnet
-// let server = {
-//     "ip": 1097649206,
-//     "port": 29296,
-//     "id": {
-//         "@type": "pub.ed25519",
-//         "key": "p2tSiaeSqX978BxE5zLxuTQM06WVDErf5/15QToxMYA="
-//     }
-// }
-
-// testnet
 let server = {
-    "ip": -2018162320,
-    "port": 49760,
+    "ip": 1097649206,
+    "port": 29296,
     "id": {
         "@type": "pub.ed25519",
-        "key": "I++/fRgw5+002UqThnF3tN2FkQChlDyfFQolVsuNSOE="
+        "key": "p2tSiaeSqX978BxE5zLxuTQM06WVDErf5/15QToxMYA="
     }
 }
+
 async function main() {
 
     const engines: LiteEngine[] = [];
@@ -59,6 +49,12 @@ async function main() {
         let latest = await client.getMasterchainInfo();
         console.log("Latest block: " + latest.last.seqno);
         await client.getFullBlock(latest.last.seqno);
+
+        const libRes = await client.getLibraries([
+            Buffer.from('587cc789eff1c84f46ec3797e45fc809a14ff5ae24f1e0c7a6a99cc9dc9061ff', 'hex'),
+            Buffer.from('bd3d7ccaf2b4ccf7fc8f1e9abaf8781e5a783f1d1e075dfab884b1d795f23666', 'hex')
+        ])
+        console.log('libRes: ', libRes)
 
         console.log('Account state full   :', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
         console.log('Account state prunned:', (await client.getAccountStatePrunned(address, latest.last)).stateHash?.toString('hex'));

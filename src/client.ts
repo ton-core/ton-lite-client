@@ -470,11 +470,10 @@ export class LiteClient {
         };
     }
 
-    getLibraries = async (hash: Buffer) => {
-        const res=  this.engine.query(Functions.liteServer_getLibraries, {
+    getLibraries = async (hashes: Buffer[]) => {
+        return this.engine.query(Functions.liteServer_getLibraries, {
             kind: 'liteServer.getLibraries',
-            libraryList: [hash]
-        }, {timeout: 5000})
-        console.log('query res', res)
+            libraryList: hashes
+        }, { timeout: 5000 })
     }
 }
