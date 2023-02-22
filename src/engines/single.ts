@@ -1,8 +1,9 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from "tweetnacl";
 import { TLFunction, TLReadBuffer, TLWriteBuffer } from "ton-tl";
-import { ADNLClient } from "../adnl";
+import { ADNLClient, ADNLClientTCP, ADNLClientWS } from "adnl";
 import { Codecs, Functions } from "../schema";
 import { LiteEngine } from "./engine";
+import EventEmitter from "events";
 
 type QueryReference = {
     f: TLFunction<any, any>;
@@ -12,25 +13,40 @@ type QueryReference = {
     timeout: number;
 };
 
-export class LiteSingleEngine implements LiteEngine {
-
+export class LiteSingleEngine extends EventEmitter implements LiteEngine {
     readonly host: string
-    readonly port: number;
     readonly publicKey: Buffer;
     #currentClient: ADNLClient | null = null;
     #ready = false;
-    #closed = false;
+    #closed = true;
     #queries: Map<string, QueryReference> = new Map();
+    #clientType: 'tcp' | 'ws'
+    #reconnectTimeout: number
 
-    constructor(args: { host: string, port: number, publicKey: Buffer }) {
+    constructor(args: { host: string, publicKey: Buffer, client?: 'tcp' | 'ws', reconnectTimeout?: number }) {
+        super()
+
         this.host = args.host;
-        this.port = args.port;
         this.publicKey = args.publicKey;
+        this.#clientType = args.client || 'tcp'
+        this.#reconnectTimeout = args.reconnectTimeout || 10000
         this.connect();
     }
 
+    isClosed() {
+        return this.#closed
+    }
+
+    isReady() {
+        return this.#ready
+    }
+
     async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
-        let id = randomBytes(32);
+        if (this.#closed) {
+            throw new Error('Engine is closed');
+        }
+
+        let id = Buffer.from(randomBytes(32));
 
         // Request
         let writer = new TLWriteBuffer();
@@ -82,21 +98,25 @@ export class LiteSingleEngine implements LiteEngine {
     }
 
     private connect() {
-
         // Configure new client
-        const client = new ADNLClient(
+        const client = this.#clientType === 'ws' ? new ADNLClientWS(
             this.host,
-            this.port,
+            this.publicKey
+        ) : new ADNLClientTCP(
+            this.host,
             this.publicKey
         );
+        client.connect()
         client.on('connect', () => {
             if (this.#currentClient === client) {
                 this.onConencted();
+                this.emit('connect')
             }
         })
         client.on('close', () => {
             if (this.#currentClient === client) {
                 this.onClosed();
+                this.emit('close')
             }
         });
         client.on('data', (data) => {
@@ -107,15 +127,25 @@ export class LiteSingleEngine implements LiteEngine {
         client.on('ready', async () => {
             if (this.#currentClient === client) {
                 this.onReady();
+                this.emit('ready')
             }
         });
+        client.on('error', (err) => {
+            this.close()
+            this.emit('error')
+
+            setTimeout(() => {
+                this.#closed = false
+                this.connect();
+            }, 30000)
+        })
 
         // Persist client
         this.#currentClient = client;
     }
 
     private onConencted = () => {
-
+        this.#closed = false
     }
 
     private onReady = () => {
@@ -161,6 +191,6 @@ export class LiteSingleEngine implements LiteEngine {
             if (!this.#closed) {
                 this.connect();
             }
-        }, 1000);
+        }, this.#reconnectTimeout);
     }
 }
