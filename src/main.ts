@@ -2,9 +2,9 @@ import { LiteEngine } from "./engines/engine";
 import { LiteSingleEngine } from "./engines/single";
 import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address, Cell } from "ton";
-import { formatDistance } from "date-fns";
-import { createBackoff } from "teslabot";
+import { Address, Cell } from "ton-core";
+// import { formatDistance } from "date-fns";
+import { createBackoff } from "teslabot"; 
 import { inspect } from "util";
 const backoff = createBackoff();
 
@@ -28,15 +28,18 @@ let server = {
 async function main() {
 
     const engines: LiteEngine[] = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 1; i++) {
         engines.push(new LiteSingleEngine({
-            host: intToIP(server.ip),
-            port: server.port,
-            publicKey: Buffer.from(server.id.key, 'base64')
+            host: `tcp://${intToIP(server.ip)}:${server.port}`,
+            // host: `wss://ws.tonlens.com/?ip=${server.ip}&port=${server.port}&pubkey=${server.id.key}`,
+            publicKey: Buffer.from(server.id.key, 'base64'),
+            // client: 'ws'
         }));
     }
     const engine: LiteEngine = new LiteRoundRobinEngine(engines);
     const client = new LiteClient({ engine });
+    const master = await client.getMasterchainInfo()
+    console.log('master', master)
 
     const address = Address.parse('kQC2sf_Hy34aMM7n9f9_V-ThHDehjH71LWBETy_JrTirPIHa');
 
@@ -45,7 +48,7 @@ async function main() {
         console.log("Latest block: " + latest.last.seqno);
         await client.getFullBlock(latest.last.seqno);
 
-        console.log('Account state full:', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
+        console.log('Account state full   :', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
         console.log('Account state prunned:', (await client.getAccountStatePrunned(address, latest.last)).stateHash?.toString('hex'));
 
         await new Promise((resolve, reject) => setTimeout(resolve, 3000));
