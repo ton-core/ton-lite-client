@@ -1,6 +1,6 @@
 {
   "name": "ton-lite-client",
-  "version": "2.0.0-beta.8",
+  "version": "2.0.0",
   "main": "dist/index.js",
   "author": "Whales Corp. <developers@whalescorp.com>",
   "files": [
@@ -9,7 +9,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -fr dist && tsc --declaration",
-    "release": "yarn build && yarn publish"
+    "release": "yarn build && yarn npm publish"
   },
   "devDependencies": {
     "@types/node": "^17.0.27",
