@@ -29,7 +29,7 @@
     "tweetnacl": "^1.0.3"
   },
   "peerDependencies": {
-    "ton": "*"
+    "ton-core": "*"
   },
   "packageManager": "yarn@3.4.1"
 }
