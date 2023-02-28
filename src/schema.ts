@@ -631,7 +631,7 @@ export const Functions = {
     } as TLFunction<liteServer_getShardBlockProof, liteServer_ShardBlockProof>,
 
     liteServer_queryPrefix: {
-        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1738601306); Codecs.liteServer_queryPrefix.encode(src, encoder); },
+        encodeRequest: (src: liteServer_queryPrefix, encoder: TLWriteBuffer) => { encoder.writeInt32(1926489734); Codecs.liteServer_queryPrefix.encode(src, encoder); },
         decodeResponse: (decoder: TLReadBuffer) => decoder.readObject()
     } as TLFunction<liteServer_queryPrefix, TLBytes>,
 
@@ -1594,7 +1594,7 @@ export const Codecs = {
         encode: (src: liteServer_Error, encoder: TLWriteBuffer) => {
             const kind = src.kind;
             if (kind === 'liteServer.error') {
-                encoder.writeInt32(464873194);
+                encoder.writeInt32(-1146494648);
                 Codecs.liteServer_error.encode(src, encoder);
                 return;
             }
@@ -1602,7 +1602,7 @@ export const Codecs = {
         },
         decode: (decoder: TLReadBuffer): liteServer_Error => {
             const kind = decoder.readInt32();
-            if (kind === 464873194) {
+            if (kind === -1146494648) {
                 return Codecs.liteServer_error.decode(decoder);
             }
             throw Error('Unknown type: ' + kind);
