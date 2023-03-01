@@ -3995,18 +3995,18 @@ __metadata:
     teslabot: ^1.5.0
     ton-core: ^0.47.1
     ton-crypto: ^3.2.0
-    ton-tl: ^1.0.0
+    ton-tl: ^1.0.1
     ts-node: ^10.7.0
     tweetnacl: ^1.0.3
     typescript: ^4.6.3
   peerDependencies:
-    ton: "*"
+    ton-core: "*"
   languageName: unknown
   linkType: soft
 
-"ton-tl@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "ton-tl@npm:1.0.0"
+"ton-tl@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "ton-tl@npm:1.0.1"
   dependencies:
     "@types/bn.js": ^5.1.0
     "@types/pegjs": ^0.10.3
@@ -4014,7 +4014,7 @@ __metadata:
     case-shift: ^2.5.3
     crc-32: ^1.2.2
     pegjs: ^0.10.0
-  checksum: 39d4f24c1bf779fd70993c5edff96eac7da76df6f88315031856b09019d1b689692234adfbed07302561341050f374cf1f6e5d3a1592f0987c322a2fd3957ca1
+  checksum: f291428fcf8e8d0dbb222ad192e8031fd5a1f4fc6ced25d2e4ed9c0d2bcd2e4352b10b312dfb8da6b50f563fc7e9ac349f64994040b77d7af2155c9753b4ea79
   languageName: node
   linkType: hard
 

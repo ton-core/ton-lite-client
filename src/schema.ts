@@ -1453,15 +1453,10 @@ export const Codecs = {
 
     liteServer_getLibraries: {
         encode: (src: liteServer_getLibraries, encoder: TLWriteBuffer) => {
-            encoder.writeVector((buffer, writer) => {
-                writer.writeInt256(buffer)
-            }, src.libraryList);
+            encoder.writeVector((s, d) => d.writeInt256(s), src.libraryList);
         },
         decode: (decoder: TLReadBuffer): liteServer_getLibraries => {
-            let libraryList = decoder.readVector((src) => {
-                return src.readInt256()
-            })
-            //Codecs.TLInt256.decode);
+            let libraryList = decoder.readVector((d) => d.readInt256());
             return { kind: 'liteServer.getLibraries', libraryList };
         },
     } as TLCodec<liteServer_getLibraries>,
