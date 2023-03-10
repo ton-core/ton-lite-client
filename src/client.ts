@@ -17,41 +17,21 @@ import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 
-const ZERO = 0n;
-
-//
-// Ops
-//
-
-const lookupBlockByID = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number }) => {
-    return await engine.query(Functions.liteServer_lookupBlock, {
-        kind: 'liteServer.lookupBlock',
-        mode: 1,
-        id: {
-            kind: 'tonNode.blockId',
-            seqno: props.seqno,
-            shard: props.shard,
-            workchain: props.workchain
-        },
-        lt: null,
-        utime: null
-    }, { timeout: 5000 });
+export interface AccountState {
+    state: Account | null;
+    lastTx: {
+        lt: bigint;
+        hash: bigint;
+    } | null;
+    balance: CurrencyCollection;
+    raw: Buffer;
+    proof: Buffer;
+    block: tonNode_blockIdExt;
+    shardBlock: tonNode_blockIdExt;
+    shardProof: Buffer;
 }
 
-const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, workchain: number, utime: number }) => {
-    return await engine.query(Functions.liteServer_lookupBlock, {
-        kind: 'liteServer.lookupBlock',
-        mode: 4,
-        id: {
-            kind: 'tonNode.blockId',
-            seqno: 0,
-            shard: props.shard,
-            workchain: props.workchain
-        },
-        lt: null,
-        utime: props.utime
-    }, { timeout: 5000 });
-}
+interface QueryArgs { timeout: number, awaitSeqno?: number }
 
 type AllShardsResponse = {
     id: tonNode_blockIdExt;
@@ -63,8 +43,45 @@ type AllShardsResponse = {
     raw: Buffer;
     proof: Buffer;
 }
-const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
-    let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, { timeout: 5000 }));
+
+const ZERO = 0n;
+
+//
+// Ops
+//
+
+const lookupBlockByID = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number }, queryArgs?: QueryArgs) => {
+    return await engine.query(Functions.liteServer_lookupBlock, {
+        kind: 'liteServer.lookupBlock',
+        mode: 1,
+        id: {
+            kind: 'tonNode.blockId',
+            seqno: props.seqno,
+            shard: props.shard,
+            workchain: props.workchain
+        },
+        lt: null,
+        utime: null
+    }, queryArgs);
+}
+
+const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, workchain: number, utime: number }, queryArgs?: QueryArgs) => {
+    return await engine.query(Functions.liteServer_lookupBlock, {
+        kind: 'liteServer.lookupBlock',
+        mode: 4,
+        id: {
+            kind: 'tonNode.blockId',
+            seqno: 0,
+            shard: props.shard,
+            workchain: props.workchain
+        },
+        lt: null,
+        utime: props.utime
+    }, queryArgs);
+}
+
+const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+    let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, queryArgs));
     let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
     let shards: { [key: string]: { [key: string]: number } } = {};
     for (let p of parsed) {
@@ -81,7 +98,7 @@ const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shar
     }
 }
 
-const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
     return await engine.query(Functions.liteServer_getBlockHeader, {
         kind: 'liteServer.getBlockHeader',
         mode: 1,
@@ -93,7 +110,7 @@ const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard:
             rootHash: props.rootHash,
             fileHash: props.fileHash
         }
-    }, { timeout: 5000 });
+    }, queryArgs);
 }
 
 type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
@@ -158,23 +175,23 @@ export class LiteClient {
     // State
     //
 
-    getMasterchainInfo = async () => {
-        return this.engine.query(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.masterchainInfo' }, { timeout: 5000 });
+    getMasterchainInfo = async (queryArgs?: QueryArgs) => {
+        return this.engine.query(Functions.liteServer_getMasterchainInfo, { kind: 'liteServer.masterchainInfo' }, queryArgs);
     }
 
-    getMasterchainInfoExt = async () => {
-        return this.engine.query(Functions.liteServer_getMasterchainInfoExt, { kind: 'liteServer.masterchainInfoExt', mode: 0 }, { timeout: 5000 });
+    getMasterchainInfoExt = async (queryArgs?: QueryArgs) => {
+        return this.engine.query(Functions.liteServer_getMasterchainInfoExt, { kind: 'liteServer.masterchainInfoExt', mode: 0 }, queryArgs);
     }
 
-    getCurrentTime = async () => {
-        return (await this.engine.query(Functions.liteServer_getTime, { kind: 'liteServer.getTime' }, { timeout: 5000 })).now;
+    getCurrentTime = async (queryArgs?: QueryArgs) => {
+        return (await this.engine.query(Functions.liteServer_getTime, { kind: 'liteServer.getTime' }, queryArgs)).now;
     }
 
-    getVersion = async () => {
-        return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, { timeout: 5000 }));
+    getVersion = async (queryArgs?: QueryArgs) => {
+        return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, queryArgs));
     }
 
-    getConfig = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getConfig = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
         let res = await this.engine.query(Functions.liteServer_getConfigAll, {
             kind: 'liteServer.getConfigAll',
             id: {
@@ -186,7 +203,7 @@ export class LiteClient {
                 rootHash: block.rootHash
             },
             mode: 0
-        }, { timeout: 5000 });
+        }, queryArgs);
 
         const configProof = Cell.fromBoc(res.configProof)[0];
         const configCell = configProof.refs[0];
@@ -202,8 +219,8 @@ export class LiteClient {
     // Account
     //
 
-    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, timeout: number = 5000) => {
-        let res = (await this.engine.query(Functions.liteServer_getAccountState, {
+    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs): Promise<AccountState> => {
+        let res = await this.engine.query(Functions.liteServer_getAccountState, {
             kind: 'liteServer.getAccountState',
             id: {
                 kind: 'tonNode.blockIdExt',
@@ -218,7 +235,7 @@ export class LiteClient {
                 workchain: src.workChain,
                 id: src.hash
             }
-        }, { timeout }));
+        }, queryArgs);
 
         let account: Account | null = null
         let balance: CurrencyCollection = { coins: ZERO };
@@ -253,7 +270,7 @@ export class LiteClient {
         }
     }
 
-    getAccountStatePrunned = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, timeout: number = 5000) => {
+    getAccountStatePrunned = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
         let res = (await this.engine.query(Functions.liteServer_getAccountStatePrunned, {
             kind: 'liteServer.getAccountStatePrunned',
             id: {
@@ -269,7 +286,7 @@ export class LiteClient {
                 workchain: src.workChain,
                 id: src.hash
             }
-        }, { timeout }));
+        }, queryArgs));
 
         let stateHash: Buffer | null = null;
         if (res.state.length > 0) {
@@ -290,7 +307,7 @@ export class LiteClient {
         }
     }
 
-    getAccountTransaction = async (src: Address, lt: string, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getAccountTransaction = async (src: Address, lt: string, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
         return await this.engine.query(Functions.liteServer_getOneTransaction, {
             kind: 'liteServer.getOneTransaction',
             id: block,
@@ -300,10 +317,10 @@ export class LiteClient {
                 id: src.hash
             },
             lt: lt
-        }, { timeout: 5000 });
+        }, queryArgs);
     }
 
-    getAccountTransactions = async (src: Address, lt: string, hash: Buffer, count: number) => {
+    getAccountTransactions = async (src: Address, lt: string, hash: Buffer, count: number, queryArgs?: QueryArgs) => {
         let loaded = await this.engine.query(Functions.liteServer_getTransactions, {
             kind: 'liteServer.getTransactions',
             count,
@@ -314,14 +331,14 @@ export class LiteClient {
             },
             lt: lt,
             hash: hash
-        }, { timeout: 5000 });
+        }, queryArgs);
         return {
             ids: loaded.ids,
             transactions: loaded.transactions
         };
     }
 
-    runMethod = async (src: Address, method: string, params: Buffer, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    runMethod = async (src: Address, method: string, params: Buffer, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
         let res = await this.engine.query(Functions.liteServer_runSmcMethod, {
             kind: 'liteServer.runSmcMethod',
             mode: 4,
@@ -340,7 +357,7 @@ export class LiteClient {
             },
             methodId: ((crc16(method) & 0xffff) | 0x10000) + '',
             params
-        }, { timeout: 5000 });
+        }, queryArgs);
         return {
             exitCode: res.exitCode,
             result: res.result ? res.result.toString('base64') : null,
@@ -386,7 +403,7 @@ export class LiteClient {
         count: number,
         after?: liteServer_transactionId3 | null | undefined,
         wantProof?: boolean
-    }) => {
+    }, queryArgs?: QueryArgs) => {
 
         let mode = args?.mode || 1 + 2 + 4;
         let count = args?.count || 100;
@@ -407,7 +424,7 @@ export class LiteClient {
             reverseOrder: null,
             after,
             wantProof: null
-        }, { timeout: 5000 });
+        }, queryArgs);
     }
 
     getFullBlock = async (seqno: number) => {
@@ -480,10 +497,10 @@ export class LiteClient {
         };
     }
 
-    getLibraries = async (hashes: Buffer[]) => {
+    getLibraries = async (hashes: Buffer[], queryArgs?: QueryArgs) => {
         return this.engine.query(Functions.liteServer_getLibraries, {
             kind: 'liteServer.getLibraries',
             libraryList: hashes
-        }, { timeout: 5000 })
+        }, queryArgs)
     }
 }

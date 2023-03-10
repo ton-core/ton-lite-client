@@ -67,6 +67,10 @@ async function main() {
         console.log('Account state full   :', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
         console.log('Account state prunned:', (await client.getAccountStatePrunned(address, latest.last)).stateHash?.toString('hex'));
 
+        const start = Date.now()
+        const res = await client.getMasterchainInfo({ timeout: 15000, awaitSeqno: latest.last.seqno + 2 })
+        console.log('wait res', Date.now() - start, res)
+
         await new Promise((resolve, reject) => setTimeout(resolve, 3000));
     }
 }
