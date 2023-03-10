@@ -17,7 +17,7 @@ import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 
-export interface AccountState {
+export interface ClientAccountState {
     state: Account | null;
     lastTx: {
         lt: bigint;
@@ -219,7 +219,7 @@ export class LiteClient {
     // Account
     //
 
-    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs): Promise<AccountState> => {
+    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs): Promise<ClientAccountState> => {
         let res = await this.engine.query(Functions.liteServer_getAccountState, {
             kind: 'liteServer.getAccountState',
             id: {
