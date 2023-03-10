@@ -31,7 +31,7 @@ export interface ClientAccountState {
     shardProof: Buffer;
 }
 
-interface QueryArgs { timeout: number, awaitSeqno?: number }
+interface QueryArgs { timeout?: number, awaitSeqno?: number }
 
 type AllShardsResponse = {
     id: tonNode_blockIdExt;

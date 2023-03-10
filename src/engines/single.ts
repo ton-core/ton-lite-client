@@ -53,7 +53,7 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
         return this.#ready
     }
 
-    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, queryArgs?: { timeout: number, awaitSeqno?: number }): Promise<RES> {
+    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, queryArgs?: { timeout?: number, awaitSeqno?: number }): Promise<RES> {
         if (this.#closed) {
             throw new Error('Engine is closed');
         }
