@@ -8,7 +8,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract } from "ton-core";
+import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract, AccountState } from "ton-core";
 import { loadShardStateUnsplit } from 'ton-core'
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
@@ -116,14 +116,38 @@ const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard:
 type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
 type BlockLookupUtimeRequest = { shard: string, workchain: number, mode: 'utime', utime: number }
 
+export type CacheMap = {
+    get(key: any): any | void;
+    set(key: any, value: any): any;
+    delete(key: any): any;
+    clear(): any;
+};
+
+interface AccountsDataLoaderKey {
+    seqno: number,
+    shard: string,
+    workchain: number,
+    rootHash: Buffer,
+    fileHash: Buffer,
+    address: Address
+}
+
 
 export class LiteClient {
     readonly engine: LiteEngine;
     #blockLockup: DataLoader<BlockLookupIDRequest | BlockLookupUtimeRequest, liteServer_blockHeader, string>;
     #shardsLockup: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>;
     #blockHeader: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, liteServer_blockHeader, string>;
+    #accounts: DataLoader<AccountsDataLoaderKey, AccountState, string>;
 
-    constructor(opts: { engine: LiteEngine, batchSize?: number | undefined | null }) {
+    constructor(opts: {
+        engine: LiteEngine,
+        batchSize?: number | undefined | null,
+        blocksCacheMap?: CacheMap,
+        headersCacheMap?: CacheMap,
+        shardsCacheMap?: CacheMap,
+        accountsCacheMap?: CacheMap,
+    }) {
         this.engine = opts.engine;
         let batchSize = typeof opts.batchSize === 'number' ? opts.batchSize : 100;
 
@@ -141,16 +165,34 @@ export class LiteClient {
                 } else {
                     return s.workchain + '::' + s.shard + '::utime-' + s.utime;
                 }
-            }
+            },
+            cacheMap: opts.blocksCacheMap,
         });
 
         this.#blockHeader = new DataLoader(async (s) => {
             return await Promise.all(s.map((v) => getBlockHeader(this.engine, v)));
-        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+        }, {
+            maxBatchSize: batchSize,
+            cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno,
+            cacheMap: opts.headersCacheMap,
+        });
 
         this.#shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
             return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
-        }, { maxBatchSize: batchSize, cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno });
+        }, {
+            maxBatchSize: batchSize,
+            cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno,
+            cacheMap: opts.shardsCacheMap,
+        });
+
+        this.#accounts = new DataLoader<AccountsDataLoaderKey, AccountState, string>(async (s) => {
+            const lastBlock = await this.getMasterchainInfo();
+            return await Promise.all(s.map((v) => this.getAccountState(v.address, lastBlock.last)));
+        }, {
+            maxBatchSize: batchSize,
+            cacheKeyFn: (s) => s.workchain + '::' + s.shard + '::' + s.seqno,
+            cacheMap: opts.shardsCacheMap,
+        });
     }
 
 
