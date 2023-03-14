@@ -1,5 +1,5 @@
-import { Account, Address, CurrencyCollection } from "ton-core";
-import { tonNode_blockIdExt } from "./schema";
+import type { Account, Address, CurrencyCollection } from "ton-core";
+import type { tonNode_blockIdExt } from "./schema";
 
 export type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
 export type BlockLookupUtimeRequest = { shard: string, workchain: number, mode: 'utime', utime: number }
