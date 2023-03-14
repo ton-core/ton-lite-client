@@ -29,28 +29,28 @@ export interface BlockID {
 }
 
 export interface ClientAccountState {
-  state: Account | null;
-  lastTx: {
-      lt: bigint;
-      hash: bigint;
-  } | null;
-  balance: CurrencyCollection;
-  raw: Buffer;
-  proof: Buffer;
-  block: tonNode_blockIdExt;
-  shardBlock: tonNode_blockIdExt;
-  shardProof: Buffer;
+    state: Account | null;
+    lastTx: {
+        lt: bigint;
+        hash: bigint;
+    } | null;
+    balance: CurrencyCollection;
+    raw: Buffer;
+    proof: Buffer;
+    block: tonNode_blockIdExt;
+    shardBlock: tonNode_blockIdExt;
+    shardProof: Buffer;
 }
 
 export interface QueryArgs { timeout?: number, awaitSeqno?: number }
 
 export type AllShardsResponse = {
-  id: tonNode_blockIdExt;
-  shards: {
-      [key: string]: {
-          [key: string]: number;
-      };
-  };
-  raw: Buffer;
-  proof: Buffer;
+    id: tonNode_blockIdExt;
+    shards: {
+        [key: string]: {
+            [key: string]: number;
+        };
+    };
+    raw: Buffer;
+    proof: Buffer;
 }

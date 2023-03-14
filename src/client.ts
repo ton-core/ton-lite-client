@@ -17,7 +17,7 @@ import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 import { LRUMap } from 'lru_map';
-import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from ".";
+import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
 
 const ZERO = 0n;
 
