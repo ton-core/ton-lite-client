@@ -88,7 +88,8 @@ const getBlockHeader = async (engine: LiteEngine, props: BlockID, queryArgs?: Qu
     }, queryArgs);
 }
 
-function getCacheMap(mapKind: string, mapOptions?: number | ((mapKind: string) => CacheMap)): CacheMap {
+type MapKind = 'block' | 'header' | 'shard' | 'account'
+function getCacheMap(mapKind: MapKind, mapOptions?: number | ((mapKind: MapKind) => CacheMap)): CacheMap {
     if (typeof mapOptions === 'function') {
         return mapOptions(mapKind)
     }
@@ -110,7 +111,7 @@ export class LiteClient {
     constructor(opts: {
         engine: LiteEngine,
         batchSize?: number | undefined | null,
-        cacheMap?: number | ((mapKind: string) => CacheMap)
+        cacheMap?: number | ((mapKind: MapKind) => CacheMap)
     }) {
         this.engine = opts.engine;
         let batchSize = typeof opts.batchSize === 'number' ? opts.batchSize : 100;
