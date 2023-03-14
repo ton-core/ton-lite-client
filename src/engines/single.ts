@@ -23,6 +23,8 @@ type QueryReference = {
     timeout: number;
 };
 
+const defaultArgs = { timeout: 5000 }
+
 export class LiteSingleEngine extends EventEmitter implements LiteEngine {
     readonly host: string
     readonly publicKey: Buffer;
@@ -51,23 +53,25 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
         return this.#ready
     }
 
-    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, args: { timeout: number, awaitSeqno?: number }): Promise<RES> {
+    async query<REQ, RES>(f: TLFunction<REQ, RES>, req: REQ, queryArgs?: { timeout?: number, awaitSeqno?: number }): Promise<RES> {
         if (this.#closed) {
             throw new Error('Engine is closed');
         }
+
+        const args = { ...defaultArgs, ...queryArgs }
 
         let id = Buffer.from(randomBytes(32));
 
         // Request
         let writer = new TLWriteBuffer();
+        if (args.awaitSeqno !== undefined) {
+            Functions.liteServer_waitMasterchainSeqno.encodeRequest({ kind: 'liteServer.waitMasterchainSeqno', seqno: args.awaitSeqno, timeoutMs: args.timeout }, writer);
+        }
         f.encodeRequest(req, writer);
         let body = writer.build();
 
         // Lite server query
         let lsQuery = new TLWriteBuffer();
-        if (args.awaitSeqno !== undefined) {
-            Functions.liteServer_waitMasterchainSeqno.encodeRequest({ kind: 'liteServer.waitMasterchainSeqno', seqno: args.awaitSeqno, timeoutMs: 1000 }, lsQuery);
-        }
         Functions.liteServer_query.encodeRequest({ kind: 'liteServer.query', data: body }, lsQuery);
         let lsbody = lsQuery.build();
 
@@ -185,7 +189,6 @@ export class LiteSingleEngine extends EventEmitter implements LiteEngine {
                         // Resolve
                         q.resolver(decoded);
                     } catch (e) {
-                        
                         // Reject
                         q.reject(e);
                     }
