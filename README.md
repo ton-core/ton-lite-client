@@ -2,7 +2,7 @@
 
 ton-lite-client is a JS library that allows you to get information from TON Blockchain through it's native ADNL protocol.
 
-To get servers list use official urls:
+To get servers list, use official urls:
 - Mainnet: https://ton.org/global.config.json
 - Testnet: https://ton.org/testnet-global.config.json
 
@@ -49,10 +49,10 @@ async function main() {
 main()
 ```
 
-By default LiteClient uses cache for 4 thigs: blocks, blockHeaders, shards, account states at given block. All caches are LRU maps with capacity of 1000 elements. If your use case needs different caching strategy - you can bring your own map.
+By default, LiteClient uses cache for 4 things: blocks, blockHeaders, shards, account states at given block. All caches are LRU maps with capacity of 1000 elements. If your use case needs different caching strategy - you can bring your own map.
 
 
-For example you can cap every map at 100 000 elements:
+For example, you can cap every map at 100 000 elements:
 ```typescript
 const client = new LiteClient({
     engine,
@@ -60,7 +60,7 @@ const client = new LiteClient({
 });
 ```
 
-Or you can cache only account states(not recommended, just example):
+Or you can cache only account states (not recommended, just example):
 ```typescript
 const client = new LiteClient({
     engine, cacheMap: (kind) => {
