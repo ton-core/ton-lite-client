@@ -2979,6 +2979,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru_map@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "lru_map@npm:0.4.1"
+  checksum: a3eb277ca7e673c7d6e78578193cc7c67a7410978c260f9b49418aa2053c7cb025d98326d3e74817119cb4ef5f114e2e05da58b7badfbde4a7b4d566c5f294e5
+  languageName: node
+  linkType: hard
+
 "make-dir@npm:^3.0.0":
   version: 3.1.0
   resolution: "make-dir@npm:3.1.0"
@@ -3991,6 +3998,7 @@ __metadata:
     adnl: ^1.0.3
     dataloader: ^2.1.0
     jest: ^27.5.1
+    lru_map: ^0.4.1
     pegjs: ^0.10.0
     teslabot: ^1.5.0
     ton-core: ^0.47.1

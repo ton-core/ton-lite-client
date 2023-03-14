@@ -16,33 +16,8 @@ import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer
 import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
-
-export interface ClientAccountState {
-    state: Account | null;
-    lastTx: {
-        lt: bigint;
-        hash: bigint;
-    } | null;
-    balance: CurrencyCollection;
-    raw: Buffer;
-    proof: Buffer;
-    block: tonNode_blockIdExt;
-    shardBlock: tonNode_blockIdExt;
-    shardProof: Buffer;
-}
-
-interface QueryArgs { timeout?: number, awaitSeqno?: number }
-
-type AllShardsResponse = {
-    id: tonNode_blockIdExt;
-    shards: {
-        [key: string]: {
-            [key: string]: number;
-        };
-    };
-    raw: Buffer;
-    proof: Buffer;
-}
+import { LRUMap } from 'lru_map';
+import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from ".";
 
 const ZERO = 0n;
 
@@ -80,7 +55,7 @@ const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, wo
     }, queryArgs);
 }
 
-const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+const getAllShardsInfo = async (engine: LiteEngine, props: BlockID, queryArgs?: QueryArgs) => {
     let res = (await engine.query(Functions.liteServer_getAllShardsInfo, { kind: 'liteServer.getAllShardsInfo', id: props }, queryArgs));
     let parsed = parseShards(Cell.fromBoc(res.data)[0].beginParse());
     let shards: { [key: string]: { [key: string]: number } } = {};
@@ -98,7 +73,7 @@ const getAllShardsInfo = async (engine: LiteEngine, props: { seqno: number, shar
     }
 }
 
-const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+const getBlockHeader = async (engine: LiteEngine, props: BlockID, queryArgs?: QueryArgs) => {
     return await engine.query(Functions.liteServer_getBlockHeader, {
         kind: 'liteServer.getBlockHeader',
         mode: 1,
@@ -113,40 +88,29 @@ const getBlockHeader = async (engine: LiteEngine, props: { seqno: number, shard:
     }, queryArgs);
 }
 
-type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
-type BlockLookupUtimeRequest = { shard: string, workchain: number, mode: 'utime', utime: number }
+function getCacheMap(mapKind: string, mapOptions?: number | ((mapKind: string) => CacheMap)): CacheMap {
+    if (typeof mapOptions === 'function') {
+        return mapOptions(mapKind)
+    }
 
-export type CacheMap = {
-    get(key: any): any | void;
-    set(key: any, value: any): any;
-    delete(key: any): any;
-    clear(): any;
-};
+    if (typeof mapOptions === 'number') {
+        return new LRUMap(mapOptions)
+    }
 
-interface AccountsDataLoaderKey {
-    seqno: number,
-    shard: string,
-    workchain: number,
-    rootHash: Buffer,
-    fileHash: Buffer,
-    address: Address
+    return new LRUMap(1000)
 }
-
 
 export class LiteClient {
     readonly engine: LiteEngine;
     #blockLockup: DataLoader<BlockLookupIDRequest | BlockLookupUtimeRequest, liteServer_blockHeader, string>;
-    #shardsLockup: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>;
-    #blockHeader: DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, liteServer_blockHeader, string>;
+    #shardsLockup: DataLoader<BlockID, AllShardsResponse, string>;
+    #blockHeader: DataLoader<BlockID, liteServer_blockHeader, string>;
     #accounts: DataLoader<AccountsDataLoaderKey, ClientAccountState, string>;
 
     constructor(opts: {
         engine: LiteEngine,
         batchSize?: number | undefined | null,
-        blocksCacheMap?: CacheMap,
-        headersCacheMap?: CacheMap,
-        shardsCacheMap?: CacheMap,
-        accountsCacheMap?: CacheMap,
+        cacheMap?: number | ((mapKind: string) => CacheMap)
     }) {
         this.engine = opts.engine;
         let batchSize = typeof opts.batchSize === 'number' ? opts.batchSize : 100;
@@ -166,7 +130,7 @@ export class LiteClient {
                     return `block::${s.workchain}::${s.shard}::utime-${s.utime}`;
                 }
             },
-            cacheMap: opts.blocksCacheMap,
+            cacheMap: getCacheMap('block', opts.cacheMap),
         });
 
         this.#blockHeader = new DataLoader(async (s) => {
@@ -174,19 +138,19 @@ export class LiteClient {
         }, {
             maxBatchSize: batchSize,
             cacheKeyFn: (s) => `header::${s.workchain}::${s.shard}::${s.seqno}`,
-            cacheMap: opts.headersCacheMap,
+            cacheMap: getCacheMap('header', opts.cacheMap),
         });
 
-        this.#shardsLockup = new DataLoader<{ seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, AllShardsResponse, string>(async (s) => {
+        this.#shardsLockup = new DataLoader<BlockID, AllShardsResponse, string>(async (s) => {
             return await Promise.all(s.map((v) => getAllShardsInfo(this.engine, v)));
         }, {
             maxBatchSize: batchSize,
             cacheKeyFn: (s) => `shard::${s.workchain}::${s.shard}::${s.seqno}`,
-            cacheMap: opts.shardsCacheMap,
+            cacheMap: getCacheMap('shard', opts.cacheMap),
         });
 
         this.#accounts = new DataLoader<AccountsDataLoaderKey, ClientAccountState, string>(async (s) => {
-            return await Promise.all(s.map((v) => this.getAccountState(v.address, {
+            return await Promise.all(s.map((v) => this.getAccountStateRaw(v.address, {
                 fileHash: v.fileHash,
                 rootHash: v.rootHash,
                 seqno: v.seqno,
@@ -196,7 +160,7 @@ export class LiteClient {
         }, {
             maxBatchSize: batchSize,
             cacheKeyFn: (s) => `account::${s.workchain}::${s.shard}::${s.seqno}::${s.address.toRawString()}`,
-            cacheMap: opts.accountsCacheMap,
+            cacheMap: getCacheMap('account', opts.cacheMap),
         });
     }
 
@@ -238,7 +202,7 @@ export class LiteClient {
         return (await this.engine.query(Functions.liteServer_getVersion, { kind: 'liteServer.getVersion' }, queryArgs));
     }
 
-    getConfig = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+    getConfig = async (block: BlockID, queryArgs?: QueryArgs) => {
         let res = await this.engine.query(Functions.liteServer_getConfigAll, {
             kind: 'liteServer.getConfigAll',
             id: {
@@ -266,7 +230,7 @@ export class LiteClient {
     // Account
     //
 
-    loadAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }): Promise<ClientAccountState> => {
+    getAccountState = async (src: Address, block: BlockID): Promise<ClientAccountState> => {
         return this.#accounts.load({
             address: src,
             seqno: block.seqno,
@@ -277,7 +241,7 @@ export class LiteClient {
         })
     }
 
-    getAccountState = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs): Promise<ClientAccountState> => {
+    getAccountStateRaw = async (src: Address, block: BlockID, queryArgs?: QueryArgs): Promise<ClientAccountState> => {
         let res = await this.engine.query(Functions.liteServer_getAccountState, {
             kind: 'liteServer.getAccountState',
             id: {
@@ -328,7 +292,7 @@ export class LiteClient {
         }
     }
 
-    getAccountStatePrunned = async (src: Address, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+    getAccountStatePrunned = async (src: Address, block: BlockID, queryArgs?: QueryArgs) => {
         let res = (await this.engine.query(Functions.liteServer_getAccountStatePrunned, {
             kind: 'liteServer.getAccountStatePrunned',
             id: {
@@ -365,7 +329,7 @@ export class LiteClient {
         }
     }
 
-    getAccountTransaction = async (src: Address, lt: string, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+    getAccountTransaction = async (src: Address, lt: string, block: BlockID, queryArgs?: QueryArgs) => {
         return await this.engine.query(Functions.liteServer_getOneTransaction, {
             kind: 'liteServer.getOneTransaction',
             id: block,
@@ -396,7 +360,7 @@ export class LiteClient {
         };
     }
 
-    runMethod = async (src: Address, method: string, params: Buffer, block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, queryArgs?: QueryArgs) => {
+    runMethod = async (src: Address, method: string, params: Buffer, block: BlockID, queryArgs?: QueryArgs) => {
         let res = await this.engine.query(Functions.liteServer_runSmcMethod, {
             kind: 'liteServer.runSmcMethod',
             mode: 4,
@@ -448,15 +412,15 @@ export class LiteClient {
         return await this.#blockLockup.load({ ...block, mode: 'utime' });
     }
 
-    getBlockHeader = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getBlockHeader = async (block: BlockID) => {
         return this.#blockHeader.load(block);
     }
 
-    getAllShardsInfo = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }) => {
+    getAllShardsInfo = async (block: BlockID) => {
         return this.#shardsLockup.load(block);
     }
 
-    listBlockTransactions = async (block: { seqno: number, shard: string, workchain: number, rootHash: Buffer, fileHash: Buffer }, args?: {
+    listBlockTransactions = async (block: BlockID, args?: {
         mode: number,
         count: number,
         after?: liteServer_transactionId3 | null | undefined,

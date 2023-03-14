@@ -10,3 +10,8 @@ export { LiteClient } from './client';
 export { LiteEngine } from './engines/engine';
 export { LiteSingleEngine } from './engines/single';
 export { LiteRoundRobinEngine } from './engines/roundRobin';
+export type {
+  AccountsDataLoaderKey, BlockID, BlockLookupIDRequest,
+  BlockLookupUtimeRequest, CacheMap, AllShardsResponse,
+  ClientAccountState, QueryArgs
+} from './types';

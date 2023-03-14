@@ -64,7 +64,7 @@ async function main() {
         ])
         console.log('libRes: ', libRes)
 
-        console.log('Account state full   :', Cell.fromBoc((await client.loadAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
+        console.log('Account state full   :', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
         console.log('Account state prunned:', (await client.getAccountStatePrunned(address, latest.last)).stateHash?.toString('hex'));
 
         const start = Date.now()
