@@ -21,30 +21,22 @@ export function parseShards(cs: Slice) {
         let stack: { slice: Slice, shard: bigint }[] = [{ slice: cs2.loadRef().asSlice(), shard: 1n << 63n }];
         let res: Map<string, number> = new Map();
         while (stack.length > 0) {
-            let item = stack.pop()!;
+            let item = stack.pop();
             let slice = item.slice;
             let shard = item.shard;
-
             let t = slice.loadBit();
             if (!t) {
                 slice.skip(4);
                 let seqno = slice.loadUint(32);
-                
-                // Check math
-                const hex = Buffer.from(shard.toString(16), 'hex')
-                const buff = Buffer.alloc(8, 0)
-                hex.copy(buff, 8 - hex.length)
-                
-                let id = new TLReadBuffer(buff.reverse()).readInt64();
+                const id = BigInt.asIntN(64, shard).toString(10);
                 res.set(id, seqno);
                 continue;
             }
-
             // Also check math
             // let delta = shard.and(shard.notn(64).addn(1)).shrn(1);
             let delta = (shard & (~shard + 1n)) >> 1n;
             if (!delta || (slice.remainingRefs !== 2 || slice.remainingBits > 0)) {
-                continue
+                continue;
             }
             stack.push({ slice: slice.loadRef().asSlice(), shard: shard - delta });
             stack.push({ slice: slice.loadRef().asSlice(), shard: shard + delta });
