@@ -21,7 +21,7 @@ export function parseShards(cs: Slice) {
         let stack: { slice: Slice, shard: bigint }[] = [{ slice: cs2.loadRef().asSlice(), shard: 1n << 63n }];
         let res: Map<string, number> = new Map();
         while (stack.length > 0) {
-            let item = stack.pop();
+            let item = stack.pop()!;
             let slice = item.slice;
             let shard = item.shard;
             let t = slice.loadBit();
