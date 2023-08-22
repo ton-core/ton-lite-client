@@ -9,7 +9,7 @@ To get servers list, use official urls:
 Example of getting account state:
 ```typescript
 import { LiteClient, LiteRoundRobinEngine, LiteSingleEngine, LiteEngine } from "ton-lite-client";
-import { Address } from "ton-core";
+import { Address } from "@ton/core";
 
 function intToIP(int: number) {
     var part1 = int & 255;

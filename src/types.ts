@@ -1,4 +1,4 @@
-import type { Account, Address, CurrencyCollection } from "ton-core";
+import type { Account, Address, CurrencyCollection } from "@ton/core";
 import type { tonNode_blockIdExt } from "./schema";
 
 export type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }

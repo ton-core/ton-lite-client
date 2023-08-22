@@ -8,8 +8,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Slice } from "ton-core";
-import { parseDict } from "ton-core/dist/dict/parseDict"
+import { Slice } from "@ton/core";
+import { parseDict } from "@ton/core/dist/dict/parseDict"
 import { TLReadBuffer } from "ton-tl";
 
 // Source: https://github.com/ton-foundation/ton/blob/ae5c0720143e231c32c3d2034cfe4e533a16d969/crypto/block/mc-config.cpp#L1232

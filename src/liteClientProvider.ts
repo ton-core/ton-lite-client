@@ -23,8 +23,8 @@ import {
     serializeTuple,
     TupleItem,
     parseTuple,
-} from 'ton-core'
-import { Maybe } from 'ton-core/dist/utils/maybe';
+} from '@ton/core'
+import { Maybe } from '@ton/core/dist/utils/maybe';
 import { LiteClient } from './'
 import { tonNode_BlockIdExt } from './schema'
 

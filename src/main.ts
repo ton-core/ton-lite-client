@@ -10,7 +10,7 @@ import { LiteEngine } from "./engines/engine";
 import { LiteSingleEngine } from "./engines/single";
 import { LiteRoundRobinEngine } from "./engines/roundRobin";
 import { LiteClient } from "./client";
-import { Address, Cell } from "ton-core";
+import { Address, Cell } from "@ton/core";
 // import { formatDistance } from "date-fns";
 import { createBackoff } from "teslabot";
 import { inspect } from "util";
