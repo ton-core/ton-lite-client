@@ -8,8 +8,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract, AccountState } from "ton-core";
-import { loadShardStateUnsplit } from 'ton-core'
+import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract, AccountState, loadShardStateUnsplit } from "@ton/core";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
