@@ -17,6 +17,7 @@ import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 import { LRUMap } from 'lru_map';
 import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
+import { findIntersection, findOnlyOnFirst } from "./utils/arrays";
 
 const ZERO = 0n;
 
@@ -474,15 +475,36 @@ export class LiteClient {
         // Extract shards
         for (let wcs in mcShards.shards) {
             let wc = parseInt(wcs, 10);
-            let psh = mcShardsPrev.shards[wcs] || {};
+            let currShards = mcShards.shards[wcs];
+            let prevShards = mcShardsPrev.shards[wcs] || {};
 
-            for (let shs in mcShards.shards[wcs]) {
-                let seqno = mcShards.shards[wcs][shs];
-                let prevSeqno = psh[shs] || seqno;
+            const currShardIds = Object.keys(currShards);
+            const prevShardIds = Object.keys(prevShards);
+
+            const bothBlockShards = findIntersection(currShardIds, prevShardIds);
+            const currBlockShards = findOnlyOnFirst(currShardIds, prevShardIds);
+            // const prevBlockShards = findElementsInArray1NotInArray2(prevShardIds, currShardIds)
+
+            // If shard is present in both blocks - add difference
+            for (let shs of bothBlockShards) {
+                let seqno = currShards[shs];
+                let prevSeqno = prevShards[shs] || seqno;
                 for (let s = prevSeqno + 1; s <= seqno; s++) {
                     shards.push({ seqno: s, workchain: wc, shard: shs });
                 }
             }
+
+            // Shards present only in current block, just add them to list
+            // todo: check if prev shard block exists?
+            for (const shs of currBlockShards) {
+                shards.push({ seqno: currShards[shs], workchain: wc, shard: shs });
+            }
+
+            // Shards present only in prev block.
+            // todo: check if newer blocks for given shards are present
+            // for (const shs of prevBlockShards) {
+            //     shards.push({ seqno: currShards[shs], workchain: wc, shard: shs });
+            // }
         }
 
         // Fetch transactions and blocks

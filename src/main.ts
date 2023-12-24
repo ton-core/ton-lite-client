@@ -32,7 +32,7 @@ let server = {
         "@type": "pub.ed25519",
         "key": "p2tSiaeSqX978BxE5zLxuTQM06WVDErf5/15QToxMYA="
     }
-}
+  }
 
 async function main() {
 
@@ -70,6 +70,10 @@ async function main() {
         const start = Date.now()
         const res = await client.getMasterchainInfo({ timeout: 15000, awaitSeqno: latest.last.seqno + 2 })
         console.log('wait res', Date.now() - start, res)
+
+        const blockData = await client.getFullBlock(34745880)
+        // Should be 288
+        console.log('block data', blockData, blockData.shards[1].transactions.length)
 
         await new Promise((resolve, reject) => setTimeout(resolve, 3000));
     }
