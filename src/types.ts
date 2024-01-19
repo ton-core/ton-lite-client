@@ -3,7 +3,7 @@ import type { tonNode_blockIdExt } from "./schema";
 
 export type BlockLookupIDRequest = { seqno: number, shard: string, workchain: number, mode: 'id' }
 export type BlockLookupUtimeRequest = { shard: string, workchain: number, mode: 'utime', utime: number }
-export type BlockLookupLtRequest = { shard: string, workchain: number, mode: 'lt', lt: number }
+export type BlockLookupLtRequest = { shard: string, workchain: number, mode: 'lt', lt: bigint }
 export type BlockLookupRequest = BlockLookupIDRequest | BlockLookupUtimeRequest | BlockLookupLtRequest
 
 export type CacheMap = {

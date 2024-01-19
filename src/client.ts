@@ -54,7 +54,7 @@ const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, wo
     }, queryArgs);
 }
 
-const lookupBlockByLt = async (engine: LiteEngine, props: { shard: string, workchain: number, lt: number }, queryArgs?: QueryArgs) => {
+const lookupBlockByLt = async (engine: LiteEngine, props: { shard: string, workchain: number, lt: bigint }, queryArgs?: QueryArgs) => {
     return await engine.query(Functions.liteServer_lookupBlock, {
         kind: 'liteServer.lookupBlock',
         mode: 2,
@@ -432,7 +432,7 @@ export class LiteClient {
         return await this.#blockLockup.load({ ...block, mode: 'utime' });
     }
 
-    lookupBlockByLt = async (block: { shard: string, workchain: number, lt: number }) => {
+    lookupBlockByLt = async (block: { shard: string, workchain: number, lt: bigint }) => {
         return await this.#blockLockup.load({ ...block, mode: 'lt' });
     }
 
