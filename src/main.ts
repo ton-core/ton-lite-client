@@ -67,6 +67,19 @@ async function main() {
         console.log('Account state full   :', Cell.fromBoc((await client.getAccountState(address, latest.last)).raw)[0].hash().toString('hex'));
         console.log('Account state prunned:', (await client.getAccountStatePrunned(address, latest.last)).stateHash?.toString('hex'));
 
+        // https://test-explorer.toncoin.org/transaction?account=EQBPId-mitsa7ldOJiYKMABPo64DxO46e93AiWXImbcPGzjI&lt=17770551000001&hash=ea5be964a475f24365ad9199e67ceb2309f4260a0fae697eed91e7fe1d168b97
+        const lt = 17770551000001
+        const blockSeqno = 16944437
+        const blockByLt = await client.lookupBlockByLt({
+            shard: latest.last.shard,
+            workchain: 0,
+            lt: Math.floor(lt),
+        })
+        console.log('Block by lt', blockByLt)
+        if (blockByLt.id.seqno !== blockSeqno) {
+            throw new Error('Wrong lt')
+        }
+
         const start = Date.now()
         const res = await client.getMasterchainInfo({ timeout: 15000, awaitSeqno: latest.last.seqno + 2 })
         console.log('wait res', Date.now() - start, res)

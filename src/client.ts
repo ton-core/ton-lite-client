@@ -16,7 +16,7 @@ import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 import { LRUMap } from 'lru_map';
-import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
+import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
 
 const ZERO = 0n;
 
@@ -51,6 +51,21 @@ const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, wo
         },
         lt: null,
         utime: props.utime
+    }, queryArgs);
+}
+
+const lookupBlockByLt = async (engine: LiteEngine, props: { shard: string, workchain: number, lt: number }, queryArgs?: QueryArgs) => {
+    return await engine.query(Functions.liteServer_lookupBlock, {
+        kind: 'liteServer.lookupBlock',
+        mode: 2,
+        id: {
+            kind: 'tonNode.blockId',
+            seqno: 0,
+            shard: props.shard,
+            workchain: props.workchain
+        },
+        lt: props.lt.toString(),
+        utime: null,
     }, queryArgs);
 }
 
@@ -102,7 +117,7 @@ function getCacheMap(mapKind: MapKind, mapOptions?: number | ((mapKind: MapKind)
 
 export class LiteClient {
     readonly engine: LiteEngine;
-    #blockLockup: DataLoader<BlockLookupIDRequest | BlockLookupUtimeRequest, liteServer_blockHeader, string>;
+    #blockLockup: DataLoader<BlockLookupRequest, liteServer_blockHeader, string>;
     #shardsLockup: DataLoader<BlockID, AllShardsResponse, string>;
     #blockHeader: DataLoader<BlockID, liteServer_blockHeader, string>;
     #accounts: DataLoader<AccountsDataLoaderKey, ClientAccountState, string>;
@@ -120,12 +135,17 @@ export class LiteClient {
                 if (v.mode === 'utime') {
                     return lookupBlockByUtime(this.engine, v);
                 }
+                if (v.mode === 'lt') {
+                    return lookupBlockByLt(this.engine, v);
+                }
                 return lookupBlockByID(this.engine, v);
             }));
         }, {
             maxBatchSize: batchSize, cacheKeyFn: (s) => {
                 if (s.mode === 'id') {
                     return `block::${s.workchain}::${s.shard}::${s.seqno}`;
+                } else if (s.mode === 'lt'){
+                    return `block::${s.workchain}::${s.shard}::lt-${s.lt}`;
                 } else {
                     return `block::${s.workchain}::${s.shard}::utime-${s.utime}`;
                 }
@@ -410,6 +430,10 @@ export class LiteClient {
 
     lookupBlockByUtime = async (block: { shard: string, workchain: number, utime: number }) => {
         return await this.#blockLockup.load({ ...block, mode: 'utime' });
+    }
+
+    lookupBlockByLt = async (block: { shard: string, workchain: number, lt: number }) => {
+        return await this.#blockLockup.load({ ...block, mode: 'lt' });
     }
 
     getBlockHeader = async (block: BlockID) => {
