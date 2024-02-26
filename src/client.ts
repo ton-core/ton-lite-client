@@ -16,7 +16,8 @@ import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 import { LRUMap } from 'lru_map';
-import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
+import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
+import { findIntersection, findOnlyOnFirst } from "./utils/arrays";
 
 const ZERO = 0n;
 
@@ -51,6 +52,21 @@ const lookupBlockByUtime = async (engine: LiteEngine, props: { shard: string, wo
         },
         lt: null,
         utime: props.utime
+    }, queryArgs);
+}
+
+const lookupBlockByLt = async (engine: LiteEngine, props: { shard: string, workchain: number, lt: bigint }, queryArgs?: QueryArgs) => {
+    return await engine.query(Functions.liteServer_lookupBlock, {
+        kind: 'liteServer.lookupBlock',
+        mode: 2,
+        id: {
+            kind: 'tonNode.blockId',
+            seqno: 0,
+            shard: props.shard,
+            workchain: props.workchain
+        },
+        lt: props.lt.toString(),
+        utime: null,
     }, queryArgs);
 }
 
@@ -102,7 +118,7 @@ function getCacheMap(mapKind: MapKind, mapOptions?: number | ((mapKind: MapKind)
 
 export class LiteClient {
     readonly engine: LiteEngine;
-    #blockLockup: DataLoader<BlockLookupIDRequest | BlockLookupUtimeRequest, liteServer_blockHeader, string>;
+    #blockLockup: DataLoader<BlockLookupRequest, liteServer_blockHeader, string>;
     #shardsLockup: DataLoader<BlockID, AllShardsResponse, string>;
     #blockHeader: DataLoader<BlockID, liteServer_blockHeader, string>;
     #accounts: DataLoader<AccountsDataLoaderKey, ClientAccountState, string>;
@@ -120,12 +136,17 @@ export class LiteClient {
                 if (v.mode === 'utime') {
                     return lookupBlockByUtime(this.engine, v);
                 }
+                if (v.mode === 'lt') {
+                    return lookupBlockByLt(this.engine, v);
+                }
                 return lookupBlockByID(this.engine, v);
             }));
         }, {
             maxBatchSize: batchSize, cacheKeyFn: (s) => {
                 if (s.mode === 'id') {
                     return `block::${s.workchain}::${s.shard}::${s.seqno}`;
+                } else if (s.mode === 'lt'){
+                    return `block::${s.workchain}::${s.shard}::lt-${s.lt}`;
                 } else {
                     return `block::${s.workchain}::${s.shard}::utime-${s.utime}`;
                 }
@@ -412,6 +433,10 @@ export class LiteClient {
         return await this.#blockLockup.load({ ...block, mode: 'utime' });
     }
 
+    lookupBlockByLt = async (block: { shard: string, workchain: number, lt: bigint }) => {
+        return await this.#blockLockup.load({ ...block, mode: 'lt' });
+    }
+
     getBlockHeader = async (block: BlockID) => {
         return this.#blockHeader.load(block);
     }
@@ -474,15 +499,36 @@ export class LiteClient {
         // Extract shards
         for (let wcs in mcShards.shards) {
             let wc = parseInt(wcs, 10);
-            let psh = mcShardsPrev.shards[wcs] || {};
+            let currShards = mcShards.shards[wcs];
+            let prevShards = mcShardsPrev.shards[wcs] || {};
 
-            for (let shs in mcShards.shards[wcs]) {
-                let seqno = mcShards.shards[wcs][shs];
-                let prevSeqno = psh[shs] || seqno;
+            const currShardIds = Object.keys(currShards);
+            const prevShardIds = Object.keys(prevShards);
+
+            const bothBlockShards = findIntersection(currShardIds, prevShardIds);
+            const currBlockShards = findOnlyOnFirst(currShardIds, prevShardIds);
+            // const prevBlockShards = findElementsInArray1NotInArray2(prevShardIds, currShardIds)
+
+            // If shard is present in both blocks - add difference
+            for (let shs of bothBlockShards) {
+                let seqno = currShards[shs];
+                let prevSeqno = prevShards[shs] || seqno;
                 for (let s = prevSeqno + 1; s <= seqno; s++) {
                     shards.push({ seqno: s, workchain: wc, shard: shs });
                 }
             }
+
+            // Shards present only in current block, just add them to list
+            // todo: check if prev shard block exists?
+            for (const shs of currBlockShards) {
+                shards.push({ seqno: currShards[shs], workchain: wc, shard: shs });
+            }
+
+            // Shards present only in prev block.
+            // todo: check if newer blocks for given shards are present
+            // for (const shs of prevBlockShards) {
+            //     shards.push({ seqno: currShards[shs], workchain: wc, shard: shs });
+            // }
         }
 
         // Fetch transactions and blocks
