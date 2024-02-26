@@ -8,7 +8,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Address, Cell, loadAccount, CurrencyCollection, Account, Contract, openContract, AccountState, loadShardStateUnsplit } from "@ton/core";
+import {
+    Address,
+    Cell,
+    loadAccount,
+    CurrencyCollection,
+    Account,
+    Contract,
+    openContract,
+    AccountState,
+    loadShardStateUnsplit,
+    StateInit
+} from "@ton/core";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
 import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
@@ -165,10 +176,23 @@ export class LiteClient {
     }
 
 
+    /**
+     * Open a contract
+     * @param contract
+     */
     open<T extends Contract>(contract: T) {
         return openContract<T>(contract, (args) =>
             createLiteClientProvider(this, null, args.address, args.init)
         )
+    }
+
+    /**
+     * Create a new contract provider
+     * @param address
+     * @param init
+     */
+    provider(address: Address, init?: StateInit | null) {
+        return createLiteClientProvider(this, null, address, init ?? null)
     }
 
     //

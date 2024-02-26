@@ -22,17 +22,18 @@ import {
     external,
     serializeTuple,
     TupleItem,
-    parseTuple,
+    parseTuple, StateInit, Contract, OpenedContract, openContract, Transaction, loadTransaction,
 } from '@ton/core'
 import { Maybe } from '@ton/core/dist/utils/maybe';
 import { LiteClient } from './'
 import { tonNode_BlockIdExt } from './schema'
+import { Buffer } from "buffer";
 
 export function createLiteClientProvider(
     client: LiteClient,
     block: number | null,
     address: Address,
-    init: { code: Cell; data: Cell } | null
+    init: StateInit | null
 ): ContractProvider {
     return {
         async getState(): Promise<ContractState> {
@@ -127,7 +128,7 @@ export function createLiteClientProvider(
             const sq = res.last
 
             // Resolve init
-            let neededInit: { code: Cell | null; data: Cell | null } | null = null
+            let neededInit: StateInit | null = null
             if (
                 init &&
                 (await client.getAccountState(address, sq)).state?.storage.state.type !== 'active'
@@ -137,7 +138,7 @@ export function createLiteClientProvider(
 
             const ext = external({
                 to: address,
-                init: neededInit ? { code: neededInit.code, data: neededInit.data } : null,
+                init: neededInit ?? null,
                 body: message,
             })
             const pkg = beginCell().store(storeMessage(ext)).endCell().toBoc()
@@ -149,7 +150,7 @@ export function createLiteClientProvider(
             const sq = res.last
 
             // Resolve init
-            let neededInit: { code: Cell | null; data: Cell | null } | null = null
+            let neededInit: StateInit | null = null
             if (
                 init &&
                 (await client.getAccountState(address, sq)).state?.storage.state.type !== 'active'
@@ -189,6 +190,51 @@ export function createLiteClientProvider(
                 body,
             })
         },
+        open<T extends Contract>(contract: T): OpenedContract<T> {
+            return openContract(contract, (args) => createLiteClientProvider(client, block, args.address, args.init));
+        },
+        async getTransactions(address: Address, lt: bigint, hash: Buffer, limit?: number): Promise<Transaction[]> {
+            // Resolve last
+            const useLimit = typeof limit === 'number';
+            if (useLimit && limit <= 0) {
+                return [];
+            }
+
+            // Load transactions
+            let transactions: Transaction[] = [];
+            do {
+                const result = await client.getAccountTransactions(address, lt.toString(), hash, limit ?? 100);
+                const txs = Cell.fromBoc(result.transactions).map((tx) => loadTransaction(tx.beginParse()));
+
+                const firstTx = txs[0];
+                const [firstLt, firstHash] = [firstTx.lt, firstTx.hash()];
+                const needSkipFirst = transactions.length > 0 && firstLt === lt && firstHash.equals(hash);
+                if (needSkipFirst) {
+                    txs.shift();
+                }
+
+                if (txs.length === 0) {
+                    break;
+                }
+                const lastTx = txs[txs.length - 1];
+                const [lastLt, lastHash] = [lastTx.lt, lastTx.hash()];
+                if (lastLt === lt && lastHash.equals(hash)) {
+                    break;
+                }
+
+                transactions.push(...txs);
+                lt = lastLt;
+                hash = lastHash;
+            } while (useLimit && transactions.length < limit);
+
+            // Apply limit
+            if (useLimit) {
+                transactions = transactions.slice(0, limit);
+            }
+
+            // Return transactions
+            return transactions;
+        }
     }
 }
 
