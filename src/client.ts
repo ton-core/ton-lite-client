@@ -16,18 +16,17 @@ import {
     Account,
     Contract,
     openContract,
-    AccountState,
     loadShardStateUnsplit,
     StateInit
 } from "@ton/core";
 import { LiteEngine } from "./engines/engine";
 import { parseShards } from "./parser/parseShards";
-import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3, tonNode_blockIdExt } from "./schema";
+import { Functions, liteServer_blockHeader, liteServer_transactionId, liteServer_transactionId3 } from "./schema";
 import DataLoader from 'dataloader';
 import { crc16 } from "./utils/crc16";
 import { createLiteClientProvider } from "./liteClientProvider";
 import { LRUMap } from 'lru_map';
-import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupIDRequest, BlockLookupRequest, BlockLookupUtimeRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
+import { AccountsDataLoaderKey, AllShardsResponse, BlockID, BlockLookupRequest, CacheMap, ClientAccountState, QueryArgs } from "./types";
 import { findIntersection, findOnlyOnFirst } from "./utils/arrays";
 
 const ZERO = 0n;
