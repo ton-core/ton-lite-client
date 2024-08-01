@@ -498,6 +498,35 @@ export class LiteClient {
         }, queryArgs);
     }
 
+    listBlockTransactionsExt = async (block: BlockID, args?: {
+        mode: number,
+        count: number,
+        after?: liteServer_transactionId3 | null | undefined,
+        wantProof?: boolean
+    }, queryArgs?: QueryArgs) => {
+
+        let mode = args?.mode || 1 + 2 + 4;
+        let count = args?.count || 100;
+        let after: liteServer_transactionId3 | null = args && args.after ? args.after : null;
+
+        return await this.engine.query(Functions.liteServer_listBlockTransactionsExt, {
+            kind: 'liteServer.listBlockTransactionsExt',
+            id: {
+                kind: 'tonNode.blockIdExt',
+                seqno: block.seqno,
+                shard: block.shard,
+                workchain: block.workchain,
+                rootHash: block.rootHash,
+                fileHash: block.fileHash
+            },
+            mode,
+            count,
+            reverseOrder: null,
+            after,
+            wantProof: null
+        }, queryArgs);
+    }
+
     getFullBlock = async (seqno: number) => {
 
         // MC Blocks
