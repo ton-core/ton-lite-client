@@ -1,6 +1,6 @@
 {
   "name": "ton-lite-client",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "main": "dist/index.js",
   "author": "Whales Corp. <developers@whalescorp.com>",
   "files": [
