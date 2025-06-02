@@ -91,6 +91,11 @@ export function createLiteClientProvider(
                     type: 'frozen',
                     stateHash: Buffer.from(state.state.storage.state.stateHash.toString(16), 'hex'),
                 }
+            } else if (!state.state) {
+                // all other providers treated Uninit and Non-existing as same status. If error thrown here, provider for Non-existing contracts cannot be deployed
+                storage = {
+                    type: 'uninit',
+                }
             } else {
                 throw Error('Unsupported state')
             }
