@@ -97,7 +97,7 @@ export function createLiteClientProvider(
                     type: 'uninit',
                 }
             } else {
-                throw Error('Unsupported state') 
+                throw Error('Unsupported state')
             }
 
             return {
