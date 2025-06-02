@@ -31,7 +31,7 @@
     "tweetnacl": "^1.0.3"
   },
   "peerDependencies": {
-    "@ton/core": "^0.56.0"
+    "@ton/core": ">=0.56.0"
   },
   "packageManager": "yarn@3.4.1"
 }
