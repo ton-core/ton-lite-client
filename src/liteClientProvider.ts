@@ -28,6 +28,7 @@ import { Maybe } from '@ton/core/dist/utils/maybe';
 import { LiteClient } from './'
 import { tonNode_BlockIdExt } from './schema'
 import { Buffer } from "buffer";
+import { toHex } from './utils/hash';
 
 export function createLiteClientProvider(
     client: LiteClient,
@@ -58,7 +59,7 @@ export function createLiteClientProvider(
             const last = state.lastTx // .account.last
                 ? {
                     lt: BigInt(state.lastTx.lt),
-                    hash: Buffer.from(state.lastTx.hash.toString(16), 'hex'),
+                    hash: Buffer.from(toHex(state.lastTx.hash), 'hex'),
                 }
                 : null
             let storage:
@@ -89,7 +90,7 @@ export function createLiteClientProvider(
             } else if (state.state?.storage.state.type === 'frozen') {
                 storage = {
                     type: 'frozen',
-                    stateHash: Buffer.from(state.state.storage.state.stateHash.toString(16), 'hex'),
+                    stateHash: Buffer.from(toHex(state.state.storage.state.stateHash), 'hex'),
                 }
             } else {
                 throw Error('Unsupported state')
